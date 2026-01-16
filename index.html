@@ -19,7 +19,10 @@
         .audio-link-item {
             display: inline-block; padding: 8px 12px; background: white; color: #333; text-decoration: none;
             border-radius: 8px; font-weight: bold; font-size: 0.85rem; border: 1px solid #ddd;
+            cursor: pointer; transition: background 0.2s;
         }
+        .audio-link-item:hover { background: #FFD700; }
+        
         .ar-audio-controls {
             position: absolute; top: 80px; right: 10px; z-index: 1000;
             display: flex; flex-direction: column; gap: 10px; background: rgba(0, 0, 0, 0.5);
@@ -56,18 +59,20 @@
     <div id="home-screen">
         <div class="home-content">
             <div class="content-left">
-                <h1 class="main-title">Kerajaan<br>Sang Buaya</h1>
-                <p class="subtitle">Scan the images to see the story come alive!</p>
+                <h1 class="main-title" data-i18n="home_title">Kerajaan<br>Sang Buaya</h1>
+                <p class="subtitle" data-i18n="home_subtitle">Scan the images to see the story come alive!</p>
+                
                 <div class="button-group">
-                    <button class="action-btn btn-yellow" onclick="startAR()">📷 SCAN AR</button>
-                    <a href="#" class="action-btn btn-blue">📚 READ E-BOOK</a>
+                    <button class="action-btn btn-yellow" onclick="startAR()" data-i18n="btn_scan">📷 SCAN AR</button>
+                    <a href="#" class="action-btn btn-blue" data-i18n="btn_read">📚 READ E-BOOK</a>
                 </div>
+
                 <div class="audio-links">
-                    <h2>Dengarlah kisah ini:</h2>
+                    <h2>Language / Bahasa:</h2>
                     <div class="audio-links-grid">
-                        <a href="indexBI.html" class="audio-link-item">🇬🇧 English</a>
-                        <a href="indexBM.html" class="audio-link-item">🇲🇾 Melayu</a>
-                        <a href="indexBKD.html" class="audio-link-item">🌾 Dusun</a>
+                        <div onclick="switchSiteLanguage('en')" class="audio-link-item">🇬🇧 English</div>
+                        <div onclick="switchSiteLanguage('ms')" class="audio-link-item">🇲🇾 Melayu</div>
+                        <div onclick="switchSiteLanguage('du')" class="audio-link-item">🌾 Dusun</div>
                     </div>
                 </div>
             </div>
@@ -155,13 +160,36 @@
 
     <audio id="bgm-audio" preload="auto"></audio>
 
+    <!-- Translations Script -->
+    <script src="translations.js"></script>
+
     <script>
-        let currentLang = 'BI'; // Default Language (BI, BM, BKD)
+        // Mapping between Text Translation keys (en, ms, du) and Audio Folder keys (BI, BM, BKD)
+        const langMap = {
+            'en': 'BI',
+            'ms': 'BM',
+            'du': 'BKD'
+        };
+        // Reverse mapping for AR buttons to Text
+        const reverseLangMap = {
+            'BI': 'en',
+            'BM': 'ms',
+            'BKD': 'du'
+        };
+
+        let currentAudioLang = 'BI'; 
         let activeSceneIndex = null;
         const audioElement = document.getElementById('bgm-audio');
         
-        // SETUP TARGET EVENTS
         document.addEventListener("DOMContentLoaded", () => {
+            // 1. Sync Audio Language with stored Text Language
+            const storedLang = localStorage.getItem('preferredLanguage') || 'en';
+            if (langMap[storedLang]) {
+                currentAudioLang = langMap[storedLang];
+                updateAudioUI(currentAudioLang);
+            }
+
+            // 2. Setup AR Targets
             const targets = document.querySelectorAll('.target-plane');
             
             targets.forEach((target) => {
@@ -181,38 +209,60 @@
             });
         });
 
-        function playAudio(sceneNum) {
-            if (!sceneNum) return;
-            // Construct path: assets/sounds/BI/SCENE 1-BI.mp3
-            // NOTE: Ensure your files are named exactly like this in the folder!
-            // Example: assets/sounds/BM/SCENE 1-BM.mp3
-            const langFolder = currentLang; // BI, BM, or BKD
-            const src = `assets/sounds/${langFolder}/SCENE ${sceneNum}-${currentLang}.mp3`;
+        // Main function to switch site-wide language (Text + Audio)
+        function switchSiteLanguage(langCode) {
+            // Change text via translations.js
+            if(typeof changeLanguage === 'function') {
+                changeLanguage(langCode);
+            }
             
-            audioElement.src = src;
-            audioElement.play().catch(e => console.log("Audio play failed (interact first):", e));
+            // Sync Audio Language
+            if(langMap[langCode]) {
+                currentAudioLang = langMap[langCode];
+                updateAudioUI(currentAudioLang);
+            }
         }
 
-        function changeAudioLang(lang) {
-            currentLang = lang;
-            
-            // Update Buttons
-            document.querySelectorAll('.ar-btn').forEach(btn => btn.classList.remove('active-lang'));
-            if(lang === 'BI') {
-                document.getElementById('btn-audio-en').classList.add('active-lang');
-                document.getElementById('audio-status').innerText = "Audio: English";
-            } else if(lang === 'BM') {
-                document.getElementById('btn-audio-ms').classList.add('active-lang');
-                document.getElementById('audio-status').innerText = "Audio: B. Melayu";
-            } else {
-                document.getElementById('btn-audio-du').classList.add('active-lang');
-                document.getElementById('audio-status').innerText = "Audio: Dusun";
+        // Called by AR buttons (when user toggles inside AR view)
+        function changeAudioLang(audioCode) {
+            currentAudioLang = audioCode;
+            updateAudioUI(audioCode);
+
+            // Also sync text language
+            if(reverseLangMap[audioCode] && typeof changeLanguage === 'function') {
+                changeLanguage(reverseLangMap[audioCode]);
             }
 
             // If a target is currently visible, switch the audio immediately
             if (activeSceneIndex) {
                 playAudio(activeSceneIndex);
             }
+        }
+
+        function updateAudioUI(code) {
+            // Remove active class from all AR buttons
+            document.querySelectorAll('.ar-btn').forEach(btn => btn.classList.remove('active-lang'));
+            
+            // Add active class to correct button
+            if(code === 'BI') {
+                document.getElementById('btn-audio-en')?.classList.add('active-lang');
+                if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: English";
+            } else if(code === 'BM') {
+                document.getElementById('btn-audio-ms')?.classList.add('active-lang');
+                if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: B. Melayu";
+            } else {
+                document.getElementById('btn-audio-du')?.classList.add('active-lang');
+                if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: Dusun";
+            }
+        }
+
+        function playAudio(sceneNum) {
+            if (!sceneNum) return;
+            // File pattern: assets/sounds/BI/SCENE 1-BI.mp3
+            const src = `assets/sounds/${currentAudioLang}/SCENE ${sceneNum}-${currentAudioLang}.mp3`;
+            
+            audioElement.src = src;
+            audioElement.play().catch(e => console.log("Audio play failed (interact first):", e));
         }
 
         function startAR() {
