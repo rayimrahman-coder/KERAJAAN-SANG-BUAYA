@@ -146,7 +146,7 @@
                 <p class="subtitle" data-i18n="home_subtitle">This book tells the story of two young men from Kampung Madang, Si Tongkol and Agus, who earn a living selling fish...</p>
                 
                 <div class="button-group">
-                    <!-- FIXED: Audio links moved OUTSIDE the button -->
+                    <!-- Audio links moved OUTSIDE the button -->
                     <button class="action-btn btn-yellow" onclick="startAR()" data-i18n="btn_scan">
                         📷 SCAN AR
                     </button>
@@ -183,7 +183,9 @@
         </div>
         
         <div class="ar-audio-controls">
-            <div class="ar-label">Audio / Suara</div>
+            <!-- FIXED: Added ID here to prevent crash -->
+            <div id="audio-status" class="ar-label">Audio / Suara</div>
+            
             <button class="ar-btn" id="btn-audio-en" onclick="setAudioLanguage('en')">🇬🇧 EN</button>
             <button class="ar-btn" id="btn-audio-ms" onclick="setAudioLanguage('ms')">🇲🇾 BM</button>
             <button class="ar-btn" id="btn-audio-du" onclick="setAudioLanguage('du')">🌾 DUS</button>
@@ -217,17 +219,23 @@
         let currentAudioLang = 'en'; 
         let isTargetVisible = false;
 
-        targetEntity.addEventListener("targetFound", event => {
-            isTargetVisible = true;
-            console.log("Target Found");
-            audioEntity.components.sound.playSound();
-        });
+        if (targetEntity) {
+            targetEntity.addEventListener("targetFound", event => {
+                isTargetVisible = true;
+                console.log("Target Found");
+                if (audioEntity && audioEntity.components.sound) {
+                    audioEntity.components.sound.playSound();
+                }
+            });
 
-        targetEntity.addEventListener("targetLost", event => {
-            isTargetVisible = false;
-            console.log("Target Lost");
-            audioEntity.components.sound.pauseSound();
-        });
+            targetEntity.addEventListener("targetLost", event => {
+                isTargetVisible = false;
+                console.log("Target Lost");
+                if (audioEntity && audioEntity.components.sound) {
+                    audioEntity.components.sound.pauseSound();
+                }
+            });
+        }
 
         function startAR() {
             // 1. Hide Home, Show AR UI
@@ -263,7 +271,7 @@
             const sceneEl = document.querySelector('a-scene');
             const arSystem = sceneEl.systems['mindar-image-system'];
             
-            if (audioEntity.components.sound) {
+            if (audioEntity && audioEntity.components.sound) {
                 audioEntity.components.sound.stopSound();
             }
             if (arSystem) {
@@ -277,13 +285,18 @@
             const activeBtn = document.getElementById(`btn-audio-${lang}`);
             if(activeBtn) activeBtn.classList.add('active-lang');
 
+            // SAFETY FIX: Check if element exists before setting text
             const statusText = document.getElementById('audio-status');
-            if(lang === 'en') statusText.innerText = "Audio: English";
-            if(lang === 'ms') statusText.innerText = "Audio: Bahasa Melayu";
-            if(lang === 'du') statusText.innerText = "Audio: Dusun";
+            if (statusText) {
+                if(lang === 'en') statusText.innerText = "Audio: English";
+                if(lang === 'ms') statusText.innerText = "Audio: Bahasa Melayu";
+                if(lang === 'du') statusText.innerText = "Audio: Dusun";
+            } else {
+                console.warn("Element #audio-status missing");
+            }
 
             const newSoundId = `#sound-${lang}`;
-            if (audioEntity.components.sound) {
+            if (audioEntity && audioEntity.components.sound) {
                 audioEntity.components.sound.stopSound();
                 audioEntity.setAttribute('sound', 'src', newSoundId);
 
