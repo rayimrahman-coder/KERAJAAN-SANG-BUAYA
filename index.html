@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Kerajaan Sang Buaya</title>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* Styling for the Audio Links - now outside the button */
+        .audio-links {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.4); /* Increased opacity for visibility */
+            border-radius: 12px;
+            border-left: 5px solid #CF7A00;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+
+        .audio-links h2 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #CF7A00;
+        }
+
+        .audio-links-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .audio-link-item {
+            display: inline-block;
+            padding: 8px 12px;
+            background: white;
+            color: #333;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+        }
+
+        .audio-link-item:hover {
+            background: #CF7A00;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Existing Styles for AR UI */
+        .ar-audio-controls {
+            position: absolute;
+            top: 80px; /* Moved down slightly to not overlap header if visible */
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .ar-label {
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        .ar-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .ar-btn:active {
+            transform: scale(0.95);
+        }
+
+        .ar-btn.active-lang {
+            background: #FFD700;
+            color: #000;
+            border: 2px solid white;
+        }
+
+        #ar-ui {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        #ar-ui > * {
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link active" data-i18n="nav_home">Home</a></li>
+                <li><a href="synopsis.html" class="nav-link" data-i18n="nav_synopsis">Synopsis</a></li>
+                <li><a href="video.html" class="nav-link" data-i18n="nav_video">Video</a></li>
+                <li><a href="biodata.html" class="nav-link" data-i18n="nav_biodata">Biodata</a></li>
+                <li><a href="contact.html" class="nav-link" data-i18n="nav_contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div id="home-screen">
+        <div class="home-content">
+            <div class="lang-switcher">
+                <button class="lang-btn" onclick="changeLanguage('en')">EN</button>
+                <button class="lang-btn" onclick="changeLanguage('ms')">BM</button>
+                <button class="lang-btn" onclick="changeLanguage('du')">DUS</button>
+            </div>
+
+            <div class="content-left">
+                <h1 class="main-title" data-i18n="home_title">Kerajaan<br>Sang Buaya</h1>
+                <p class="subtitle" data-i18n="home_subtitle">This book tells the story of two young men from Kampung Madang, Si Tongkol and Agus, who earn a living selling fish...</p>
+                
+                <div class="button-group">
+                    <!-- FIXED: Audio links moved OUTSIDE the button -->
+                    <button class="action-btn btn-yellow" onclick="startAR()" data-i18n="btn_scan">
+                        📷 SCAN AR
+                    </button>
+                    
+                    <a href="https://heyzine.com/flip-book/d296a0b263.html" target="_blank" class="action-btn btn-blue" data-i18n="btn_read">
+                        📚 READ E-BOOK
+                    </a>
+                </div>
+
+                <!-- Moved Audio Links here for better layout -->
+                <div class="audio-links">
+                    <h2>Dengarlah kisah ini:</h2>
+                    <div class="audio-links-grid">
+                        <a href="indexBI.html" class="audio-link-item">🇬🇧 English</a>
+                        <a href="indexBM.html" class="audio-link-item">🇲🇾 Melayu</a>
+                        <a href="indexBKD.html" class="audio-link-item">🌾 Dusun</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="content-right">
+                <div class="book-wrapper">
+                    <img src="Bookcoverpage.jpeg" alt="Kerajaan Sang Buaya Book" class="book-3d">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AR UI Overlay (Hidden by default) -->
+    <div id="ar-ui" style="display: none;">
+        <div class="top-bar">
+            <button class="back-btn" onclick="stopAR()" data-i18n="btn_back_home">⬅ Back to Home</button>
+        </div>
+        
+        <div class="ar-audio-controls">
+            <div class="ar-label">Audio / Suara</div>
+            <button class="ar-btn" id="btn-audio-en" onclick="setAudioLanguage('en')">🇬🇧 EN</button>
+            <button class="ar-btn" id="btn-audio-ms" onclick="setAudioLanguage('ms')">🇲🇾 BM</button>
+            <button class="ar-btn" id="btn-audio-du" onclick="setAudioLanguage('du')">🌾 DUS</button>
+        </div>
+
+        <div class="scan-guide"></div>
+        <div class="info-panel">
+            <h2 data-i18n="ar_guide_title">The Crocodile Kingdom</h2>
+            <p data-i18n="ar_guide_text">Point camera at the book cover to start!</p>
+            <p id="audio-status" style="font-size: 0.8em; color: #ffd700; margin-top: 5px;">Audio: English</p>
+        </div>
+    </div>
+
+    <a-scene mindar-image="imageTargetSrc: ./Buaya.mind; autoStart: false; uiScanning: no;" 
+             color-space="sRGB" 
+             renderer="colorManagement: true, physicallyCorrectLights" 
+             vr-mode-ui="enabled: false" 
+             device-orientation-permission-ui="enabled: false">
+        
+        <a-assets>
+            <audio id="sound-en" src="../../assets/sounds/BI.mp3" preload="auto"></audio>
+            <audio id="sound-ms" src="../../assets/sounds/BM.mp3" preload="auto"></audio>
+            <audio id="sound-du" src="../../assets/sounds/BKD.mp3" preload="auto"></audio>
+        </a-assets>
+
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        
+        <a-entity mindar-image-target="targetIndex: 0" id="target-entity">
+            <a-box position="0 0 0.5" scale="0.5 0.5 0.5" color="#66BB6A" animation="property: rotation; to: 0 360 0; dur: 3000; loop: true"></a-box>
+            <a-entity id="ar-audio" sound="src: #sound-en; autoplay: false; loop: false;"></a-entity>
+        </a-entity>
+    </a-scene>
+
+    <script src="translations.js"></script>
+    <script>
+        // We get the elements dynamically in the functions to ensure they exist
+        const targetEntity = document.getElementById('target-entity');
+        const audioEntity = document.getElementById('ar-audio');
+        let currentAudioLang = 'en'; 
+        let isTargetVisible = false;
+
+        targetEntity.addEventListener("targetFound", event => {
+            isTargetVisible = true;
+            console.log("Target Found");
+            audioEntity.components.sound.playSound();
+        });
+
+        targetEntity.addEventListener("targetLost", event => {
+            isTargetVisible = false;
+            console.log("Target Lost");
+            audioEntity.components.sound.pauseSound();
+        });
+
+        function startAR() {
+            // 1. Hide Home, Show AR UI
+            document.getElementById('home-screen').style.display = 'none';
+            document.getElementById('ar-ui').style.display = 'block'; 
+            
+            // 2. CRITICAL FIX: Make body transparent!
+            // The camera video is z-index: -2. If body has a background, it covers the camera.
+            document.body.style.background = 'transparent';
+
+            // 3. Get AR System and Start
+            const sceneEl = document.querySelector('a-scene');
+            const arSystem = sceneEl.systems['mindar-image-system'];
+            
+            if (arSystem) {
+                arSystem.start(); // Start the camera
+            } else {
+                console.error("MindAR system not found");
+            }
+
+            setAudioLanguage(currentAudioLang);
+        }
+
+        function stopAR() {
+            // 1. Show Home, Hide AR UI
+            document.getElementById('home-screen').style.display = 'flex';
+            document.getElementById('ar-ui').style.display = 'none';
+            
+            // 2. Restore Background Color
+            document.body.style.background = 'linear-gradient(180deg, #4FC3F7 0%, #81C784 100%)';
+
+            // 3. Stop AR System
+            const sceneEl = document.querySelector('a-scene');
+            const arSystem = sceneEl.systems['mindar-image-system'];
+            
+            if (audioEntity.components.sound) {
+                audioEntity.components.sound.stopSound();
+            }
+            if (arSystem) {
+                arSystem.stop(); // Stop camera
+            }
+        }
+
+        function setAudioLanguage(lang) {
+            currentAudioLang = lang;
+            document.querySelectorAll('.ar-btn').forEach(btn => btn.classList.remove('active-lang'));
+            const activeBtn = document.getElementById(`btn-audio-${lang}`);
+            if(activeBtn) activeBtn.classList.add('active-lang');
+
+            const statusText = document.getElementById('audio-status');
+            if(lang === 'en') statusText.innerText = "Audio: English";
+            if(lang === 'ms') statusText.innerText = "Audio: Bahasa Melayu";
+            if(lang === 'du') statusText.innerText = "Audio: Dusun";
+
+            const newSoundId = `#sound-${lang}`;
+            if (audioEntity.components.sound) {
+                audioEntity.components.sound.stopSound();
+                audioEntity.setAttribute('sound', 'src', newSoundId);
+
+                if (isTargetVisible) {
+                    audioEntity.components.sound.playSound();
+                }
+            }
+        }
+    </script>
+</body>
+</html>

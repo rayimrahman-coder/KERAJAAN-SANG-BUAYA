@@ -1,0 +1,220 @@
+/* --- EXISTING IMPORTS & BODY --- */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+
+body {
+    margin: 0;
+    font-family: 'Fredoka', 'Comic Sans MS', sans-serif; 
+    /* Remove overflow:hidden so new pages can scroll */
+    background: linear-gradient(180deg, #4FC3F7 0%, #81C784 100%);
+    min-height: 100vh;
+}
+
+/* --- NEW HEADER STYLES --- */
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 15px 0;
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 20px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #3E2723;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 8px 15px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+    background-color: #FFD700;
+    color: #3E2723;
+}
+
+/* --- GENERIC PAGE CONTAINER (For Synopsis, Video, Bio, Contact) --- */
+.page-wrapper {
+    padding-top: 100px; /* Space for fixed header */
+    display: flex;
+    justify-content: center;
+    padding-bottom: 50px;
+}
+
+.content-box {
+    background: rgba(255, 255, 255, 0.85);
+    padding: 40px;
+    border-radius: 20px;
+    border: 4px solid #8D6E63;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 800px;
+    text-align: center;
+}
+
+/* --- HOMEPAGE SPECIFIC --- */
+#home-screen {
+    position: absolute; /* Kept absolute for AR overlay logic */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 20; 
+    padding-top: 60px; /* Push content down below header */
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* Let clicks pass through to header */
+}
+
+.home-content {
+    background: rgba(255, 255, 255, 0.4);
+    padding: 40px;
+    border-radius: 20px;
+    border: 4px solid #8D6E63;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 900px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    pointer-events: auto; /* Re-enable clicks for buttons */
+    position: relative;
+}
+
+/* --- BUTTONS --- */
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+    margin-top: 20px;
+    width: 100%;
+}
+
+/* Unified Button Style */
+.action-btn {
+    display: inline-block; /* Changed for <a> tags */
+    text-decoration: none;
+    text-align: center;
+    border-radius: 50px;
+    font-weight: bold;
+    font-family: 'Fredoka', sans-serif;
+    cursor: pointer;
+    transition: transform 0.1s;
+    width: 100%;
+    max-width: 250px;
+    padding: 12px 0;
+    box-sizing: border-box;
+}
+
+.btn-yellow {
+    background-color: #FFD700;
+    color: #3E2723;
+    border: 3px solid #FBC02D;
+    box-shadow: 0 5px 0 #F9A825;
+    font-size: 1.5rem;
+}
+
+.btn-blue {
+    background-color: #42A5F5;
+    color: white;
+    border: 3px solid #1E88E5;
+    box-shadow: 0 5px 0 #1565C0;
+    font-size: 1.3rem;
+}
+
+.action-btn:active {
+    transform: translateY(4px);
+    box-shadow: none; /* Simple reset for shadow */
+}
+
+/* --- 3D BOOK & OTHER EXISTING STYLES --- */
+.content-left { flex: 1; text-align: left; min-width: 300px; }
+.content-right { flex: 1; display: flex; justify-content: center; align-items: center; }
+.main-title { font-size: 3rem; color: #3E2723; margin: 0 0 5px 0; text-shadow: 2px 2px #fff; line-height: 1.1; }
+.subtitle { color: #2E7D32; font-size: 1.3rem; margin-bottom: 25px; }
+
+.book-wrapper { perspective: 1000px; }
+.book-3d {
+    width: 280px; height: auto; border-radius: 2px 5px 5px 2px;
+    box-shadow: -12px 0 0 #3e2723, -14px 0 0 #5d4037, -10px 10px 20px rgba(0,0,0,0.4);
+    transform: rotateY(-20deg) rotateX(5deg); transition: all 0.4s ease;
+}
+.book-3d:hover { transform: rotateY(0deg) scale(1.05); }
+
+/* --- AR UI --- */
+#ar-ui {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 10; pointer-events: none; display: flex;
+    flex-direction: column; justify-content: space-between;
+}
+.top-bar { padding: 15px; pointer-events: auto; padding-top: 80px; /* Below header */ }
+.back-btn { background-color: #ef5350; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; box-shadow: 0 3px 0 #c62828; }
+.scan-guide {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 65vw; height: 65vw; border: 5px dashed #FFD700; border-radius: 25px;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); opacity: 0.8; animation: pulse 2s infinite;
+}
+.info-panel { background-color: #FFF8E1; border: 4px solid #8D6E63; padding: 20px; margin: 20px; border-radius: 20px; text-align: center; pointer-events: auto; }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .home-content { flex-direction: column; text-align: center; padding: 25px; overflow-y: auto; max-height: 80vh; }
+    .content-left { order: 1; text-align: center; }
+    .content-right { order: 2; margin-top: 20px; }
+    .button-group { align-items: center; }
+    .book-3d { width: 180px; }
+    .nav-link { font-size: 0.8rem; padding: 5px 8px; } /* Smaller menu on mobile */
+    .lang-switcher { position: relative; top: 0; right: 0; margin-bottom: 20px; justify-content: center; }
+}
+@keyframes pulse { 0% { border-color: #FFD700; } 50% { border-color: #FFF; } 100% { border-color: #FFD700; } }
+
+/* --- NEW LANGUAGE SWITCHER STYLES --- */
+.lang-switcher {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+}
+
+.lang-btn {
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid #8D6E63;
+    border-radius: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #3E2723;
+    transition: all 0.2s;
+    font-family: 'Fredoka', sans-serif;
+}
+
+.lang-btn:hover {
+    background: #FFD700;
+    transform: scale(1.1);
+}
+
+.lang-btn.active-lang {
+    background: #2E7D32;
+    color: white;
+    border-color: #1B5E20;
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - Kerajaan Sang Buaya</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link" data-i18n="nav_home">Home</a></li>
+                <li><a href="synopsis.html" class="nav-link" data-i18n="nav_synopsis">Synopsis</a></li>
+                <li><a href="video.html" class="nav-link" data-i18n="nav_video">Video</a></li>
+                <li><a href="biodata.html" class="nav-link" data-i18n="nav_biodata">Biodata</a></li>
+                <li><a href="contact.html" class="nav-link active" data-i18n="nav_contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="page-wrapper">
+        <div class="content-box">
+            <h1 style="color: #2E7D32;" data-i18n="contact_title">Contact Me</h1>
+            <p data-i18n="contact_subtitle">Have questions about the AR Storybook? Send a message!</p>
+
+            <form style="display: flex; flex-direction: column; gap: 15px; text-align: left; max-width: 400px; margin: 0 auto;">
+                <div>
+                    <label style="font-weight: bold; color: #3E2723;" data-i18n="label_name">Name:</label>
+                    <input type="text" style="width: 100%; padding: 10px; border-radius: 5px; border: 2px solid #8D6E63;">
+                </div>
+                
+                <div>
+                    <label style="font-weight: bold; color: #3E2723;" data-i18n="label_email">Email:</label>
+                    <input type="email" style="width: 100%; padding: 10px; border-radius: 5px; border: 2px solid #8D6E63;">
+                </div>
+
+                <div>
+                    <label style="font-weight: bold; color: #3E2723;" data-i18n="label_message">Message:</label>
+                    <textarea rows="4" style="width: 100%; padding: 10px; border-radius: 5px; border: 2px solid #8D6E63;"></textarea>
+                </div>
+
+                <button type="submit" class="action-btn btn-yellow" style="width: 100%; border-radius: 10px; font-size: 1.2rem;" data-i18n="btn_send">Send Message</button>
+            </form>
+        </div>
+    </div>
+    
+    <script src="translations.js"></script>
+
+</body>
+</html>
