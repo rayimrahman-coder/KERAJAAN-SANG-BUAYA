@@ -20,7 +20,7 @@
             height: 100%;
             z-index: 999;
             pointer-events: none;
-            display: none; /* Hidden by default */
+            display: none;
         }
 
         .ar-ui-overlay > * {
@@ -43,7 +43,35 @@
             letter-spacing: 1px;
         }
 
-        /* Language Modal Styles */
+        /* Language Switcher (Website Text) */
+        .site-lang-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px;
+            border-radius: 20px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .site-lang-btn {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: #3E2723;
+        }
+
+        .site-lang-btn:hover {
+            background: rgba(141, 110, 99, 0.2);
+        }
+
+        /* Modal Styles */
         .modal-backdrop {
             position: fixed;
             top: 0;
@@ -88,7 +116,7 @@
             gap: 15px;
         }
 
-        .lang-btn {
+        .lang-select-btn {
             background: #f1f1f1;
             border: 2px solid #8D6E63;
             padding: 15px;
@@ -103,7 +131,7 @@
             gap: 10px;
         }
 
-        .lang-btn:hover {
+        .lang-select-btn:hover {
             background: #8D6E63;
             color: white;
             transform: scale(1.02);
@@ -118,9 +146,10 @@
             cursor: pointer;
         }
 
-        /* Hide home content when AR is active */
+        /* Hide elements when AR is active */
         body.ar-active .home-content,
-        body.ar-active .main-header {
+        body.ar-active .main-header,
+        body.ar-active .site-lang-switcher {
             display: none !important;
         }
         
@@ -134,23 +163,29 @@
     <header class="main-header">
         <nav>
             <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link active">Home</a></li>
-                <li><a href="synopsis.html" class="nav-link">Synopsis</a></li>
-                <li><a href="video.html" class="nav-link">Video</a></li>
-                <li><a href="biodata.html" class="nav-link">Biodata</a></li>
-                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><a href="index.html" class="nav-link active" data-i18n="nav_home">Home</a></li>
+                <li><a href="synopsis.html" class="nav-link" data-i18n="nav_synopsis">Synopsis</a></li>
+                <li><a href="video.html" class="nav-link" data-i18n="nav_video">Video</a></li>
+                <li><a href="biodata.html" class="nav-link" data-i18n="nav_biodata">Biodata</a></li>
+                <li><a href="contact.html" class="nav-link" data-i18n="nav_contact">Contact</a></li>
             </ul>
         </nav>
     </header>
 
+    <div class="site-lang-switcher">
+        <button class="site-lang-btn" onclick="changeLanguage('en')">EN</button> |
+        <button class="site-lang-btn" onclick="changeLanguage('ms')">BM</button> |
+        <button class="site-lang-btn" onclick="changeLanguage('du')">DU</button>
+    </div>
+
     <div id="home-screen">
         <div class="home-content">
             <div class="content-left">
-                <h1 class="main-title">Kerajaan<br>Sang Buaya</h1>
-                <p class="subtitle">Scan the images to see the story come alive!</p>
+                <h1 class="main-title" data-i18n="home_title">Kerajaan<br>Sang Buaya</h1>
+                <p class="subtitle" data-i18n="home_subtitle">This book tells the story of two young men...</p>
                 <div class="button-group">
-                    <button class="action-btn btn-yellow" onclick="openLangModal()">📷 SCAN AR</button>
-                    <a href="synopsis.html" class="action-btn btn-blue">📚 READ SYNOPSIS</a>
+                    <button class="action-btn btn-yellow" onclick="openLangModal()" data-i18n="btn_scan">📷 SCAN AR</button>
+                    <a href="synopsis.html" class="action-btn btn-blue" data-i18n="btn_read">📚 READ E-BOOK</a>
                 </div>
             </div>
             <div class="content-right">
@@ -164,17 +199,19 @@
             <h2>Select Language</h2>
             <p style="margin-bottom: 15px;">Choose your preferred audio language:</p>
             <div class="lang-btn-grid">
-                <button class="lang-btn" onclick="startAR('BI')">🇬🇧 English</button>
-                <button class="lang-btn" onclick="startAR('BM')">🇲🇾 Malay</button>
-                <button class="lang-btn" onclick="startAR('BKD')">🌾 Dusun</button>
+                <button class="lang-select-btn" onclick="startAR('BI', 'en')">🇬🇧 English</button>
+                <button class="lang-select-btn" onclick="startAR('BM', 'ms')">🇲🇾 Malay</button>
+                <button class="lang-select-btn" onclick="startAR('BKD', 'du')">🌾 Dusun</button>
             </div>
             <button class="cancel-btn" onclick="closeLangModal()">Cancel</button>
         </div>
     </div>
 
     <div id="ar-ui" class="ar-ui-overlay">
-        <button class="back-btn" onclick="stopAR()">⬅ Back to Menu</button>
+        <button class="back-btn" onclick="stopAR()">⬅ Back</button>
     </div>
+
+    <script src="translations.js"></script>
 
     <script>
         const modal = document.getElementById('lang-modal');
@@ -187,26 +224,32 @@
             modal.classList.remove('active');
         }
 
-        function startAR(language) {
+        // arCode: 'BI', 'BM', 'BKD' (Which JS file to load)
+        // langCode: 'en', 'ms', 'du' (Which text language to save for the website)
+        function startAR(arCode, langCode) {
             closeLangModal();
             
-            // 1. Hide Home UI
+            // 1. Sync the website language preference so when they come back it matches
+            if (typeof changeLanguage === "function") {
+                changeLanguage(langCode);
+            }
+
+            // 2. Hide Home UI
             document.body.classList.add('ar-active');
             document.getElementById('home-screen').style.display = 'none';
             
-            // 2. Show AR Back Button
+            // 3. Show AR Back Button
             document.getElementById('ar-ui').style.display = 'block';
 
-            // 3. Dynamically load the correct script based on language
+            // 4. Dynamically load the correct script
             const script = document.createElement('script');
             script.type = 'module';
 
-            // Select the correct file based on the button clicked
-            if (language === 'BI') {
+            if (arCode === 'BI') {
                 script.src = 'mainBI.js';
-            } else if (language === 'BM') {
+            } else if (arCode === 'BM') {
                 script.src = 'mainBM.js';
-            } else if (language === 'BKD') {
+            } else if (arCode === 'BKD') {
                 script.src = 'mainBKD.js';
             }
 
@@ -215,8 +258,3 @@
 
         function stopAR() {
             // Reloading is the cleanest way to stop MindAR and release camera/memory
-            window.location.reload();
-        }
-    </script>
-</body>
-</html>
