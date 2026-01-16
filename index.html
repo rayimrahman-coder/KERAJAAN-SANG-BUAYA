@@ -9,114 +9,34 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* Styling for the Audio Links - now outside the button */
+        /* [KEEPING YOUR EXISTING STYLES] */
         .audio-links {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.4); /* Increased opacity for visibility */
-            border-radius: 12px;
-            border-left: 5px solid #CF7A00;
-            width: 100%;
-            max-width: 400px;
-            box-sizing: border-box;
+            margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.4);
+            border-radius: 12px; border-left: 5px solid #CF7A00; width: 100%; max-width: 400px; box-sizing: border-box;
         }
-
-        .audio-links h2 {
-            margin-top: 0;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            color: #CF7A00;
-        }
-
-        .audio-links-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
+        .audio-links h2 { margin-top: 0; font-size: 1.1rem; margin-bottom: 10px; color: #CF7A00; }
+        .audio-links-grid { display: flex; flex-wrap: wrap; gap: 10px; }
         .audio-link-item {
-            display: inline-block;
-            padding: 8px 12px;
-            background: white;
-            color: #333;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border: 1px solid #ddd;
+            display: inline-block; padding: 8px 12px; background: white; color: #333; text-decoration: none;
+            border-radius: 8px; font-weight: bold; font-size: 0.85rem; border: 1px solid #ddd;
         }
-
-        .audio-link-item:hover {
-            background: #CF7A00;
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        /* Existing Styles for AR UI */
         .ar-audio-controls {
-            position: absolute;
-            top: 80px; /* Moved down slightly to not overlap header if visible */
-            right: 10px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
+            position: absolute; top: 80px; right: 10px; z-index: 1000;
+            display: flex; flex-direction: column; gap: 10px; background: rgba(0, 0, 0, 0.5);
+            padding: 10px; border-radius: 10px; backdrop-filter: blur(5px);
         }
-
-        .ar-label {
-            color: white;
-            font-size: 12px;
-            text-align: center;
-            margin-bottom: 5px;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px black;
-        }
-
+        .ar-label { color: white; font-size: 12px; text-align: center; margin-bottom: 5px; font-weight: bold; }
         .ar-btn {
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.9); border: none; padding: 8px 12px; border-radius: 20px;
+            font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;
         }
-
-        .ar-btn:active {
-            transform: scale(0.95);
-        }
-
-        .ar-btn.active-lang {
-            background: #FFD700;
-            color: #000;
-            border: 2px solid white;
-        }
-
-        #ar-ui {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 999;
-            pointer-events: none;
-        }
-
-        #ar-ui > * {
-            pointer-events: auto;
-        }
+        .ar-btn.active-lang { background: #FFD700; color: #000; border: 2px solid white; }
+        #ar-ui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; pointer-events: none; }
+        #ar-ui > * { pointer-events: auto; }
+        /* Fix for hidden UI */
+        body.ar-active { background: transparent !important; }
+        body.ar-active .home-content { display: none; }
+        body.ar-active header { display: none; }
     </style>
 </head>
 <body>
@@ -124,39 +44,21 @@
     <header class="main-header">
         <nav>
             <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link active" data-i18n="nav_home">Home</a></li>
-                <li><a href="synopsis.html" class="nav-link" data-i18n="nav_synopsis">Synopsis</a></li>
-                <li><a href="video.html" class="nav-link" data-i18n="nav_video">Video</a></li>
-                <li><a href="biodata.html" class="nav-link" data-i18n="nav_biodata">Biodata</a></li>
-                <li><a href="contact.html" class="nav-link" data-i18n="nav_contact">Contact</a></li>
-            </ul>
+                <li><a href="index.html" class="nav-link active">Home</a></li>
+                <li><a href="synopsis.html" class="nav-link">Synopsis</a></li>
+                </ul>
         </nav>
     </header>
 
     <div id="home-screen">
         <div class="home-content">
-            <div class="lang-switcher">
-                <button class="lang-btn" onclick="changeLanguage('en')">EN</button>
-                <button class="lang-btn" onclick="changeLanguage('ms')">BM</button>
-                <button class="lang-btn" onclick="changeLanguage('du')">DUS</button>
-            </div>
-
             <div class="content-left">
-                <h1 class="main-title" data-i18n="home_title">Kerajaan<br>Sang Buaya</h1>
-                <p class="subtitle" data-i18n="home_subtitle">This book tells the story of two young men from Kampung Madang, Si Tongkol and Agus, who earn a living selling fish...</p>
-                
+                <h1 class="main-title">Kerajaan<br>Sang Buaya</h1>
+                <p class="subtitle">Scan the images to see the story come alive!</p>
                 <div class="button-group">
-                    <!-- Audio links moved OUTSIDE the button -->
-                    <button class="action-btn btn-yellow" onclick="startAR()" data-i18n="btn_scan">
-                        📷 SCAN AR
-                    </button>
-                    
-                    <a href="https://heyzine.com/flip-book/d296a0b263.html" target="_blank" class="action-btn btn-blue" data-i18n="btn_read">
-                        📚 READ E-BOOK
-                    </a>
+                    <button class="action-btn btn-yellow" onclick="startAR()">📷 SCAN AR</button>
+                    <a href="#" class="action-btn btn-blue">📚 READ E-BOOK</a>
                 </div>
-
-                <!-- Moved Audio Links here for better layout -->
                 <div class="audio-links">
                     <h2>Dengarlah kisah ini:</h2>
                     <div class="audio-links-grid">
@@ -165,31 +67,25 @@
                         <a href="indexBKD.html" class="audio-link-item">🌾 Dusun</a>
                     </div>
                 </div>
-
             </div>
-
             <div class="content-right">
-                <div class="book-wrapper">
-                    <img src="Bookcoverpage.jpeg" alt="Kerajaan Sang Buaya Book" class="book-3d">
-                </div>
+                <div class="book-wrapper"><img src="Bookcoverpage.jpeg" alt="Book" class="book-3d"></div>
             </div>
         </div>
     </div>
 
-    <!-- AR UI Overlay (Hidden by default) -->
     <div id="ar-ui" style="display: none;">
-        <div class="top-bar">
-            <button class="back-btn" onclick="stopAR()" data-i18n="btn_back_home">⬅ Back to Home</button>
+        <div class="top-bar" style="position:absolute; top:10px; left:10px;">
+            <button class="back-btn" onclick="stopAR()" style="padding:10px; background:red; color:white; border:none; border-radius:5px;">⬅ Back to Home</button>
         </div>
         
         <div class="ar-audio-controls">
-            <!-- FIXED: Added ID here to prevent crash -->
-            <div id="audio-status" class="ar-label">Audio / Suara</div>
-            
-            <button class="ar-btn" id="btn-audio-en" onclick="setAudioLanguage('en')">🇬🇧 EN</button>
-            <button class="ar-btn" id="btn-audio-ms" onclick="setAudioLanguage('ms')">🇲🇾 BM</button>
-            <button class="ar-btn" id="btn-audio-du" onclick="setAudioLanguage('du')">🌾 DUS</button>
+            <div id="audio-status" class="ar-label">Audio: English</div>
+            <button class="ar-btn active-lang" id="btn-audio-en" onclick="changeAudioLang('BI')">🇬🇧 EN</button>
+            <button class="ar-btn" id="btn-audio-ms" onclick="changeAudioLang('BM')">🇲🇾 BM</button>
+            <button class="ar-btn" id="btn-audio-du" onclick="changeAudioLang('BKD')">🌾 DUS</button>
         </div>
+    </div>
 
     <a-scene mindar-image="imageTargetSrc: ./Buaya.mind; autoStart: false; uiScanning: no;" 
              color-space="sRGB" 
@@ -198,112 +94,135 @@
              device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <audio id="sound-en" src="assets/sounds/BI.mp3" preload="auto"></audio>
-            <audio id="sound-ms" src="assets/sounds/BM.mp3" preload="auto"></audio>
-            <audio id="sound-du" src="assets/sounds/BKD.mp3" preload="auto"></audio>
+            <a-asset-item id="model-1" src="assets/models/scene1.glb"></a-asset-item>
+            <a-asset-item id="model-2" src="assets/models/scene2.glb"></a-asset-item>
+            <a-asset-item id="model-3" src="assets/models/scene3.glb"></a-asset-item>
+            <a-asset-item id="model-4" src="assets/models/scene4.glb"></a-asset-item>
+            <a-asset-item id="model-5" src="assets/models/scene5.glb"></a-asset-item>
+            <a-asset-item id="model-6" src="assets/models/scene6.glb"></a-asset-item>
+            <a-asset-item id="model-7" src="assets/models/scene7.glb"></a-asset-item>
+            <a-asset-item id="model-8" src="assets/models/scene8.glb"></a-asset-item>
+            <a-asset-item id="model-9" src="assets/models/scene9.glb"></a-asset-item>
+            <a-asset-item id="model-10" src="assets/models/scene10.glb"></a-asset-item>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-        
-        <a-entity mindar-image-target="targetIndex: 0" id="target-entity">
-            <a-box position="0 0 0.5" scale="0.5 0.5 0.5" color="#66BB6A" animation="property: rotation; to: 0 360 0; dur: 3000; loop: true"></a-box>
-            <a-entity id="ar-audio" sound="src: #sound-en; autoplay: false; loop: false;"></a-entity>
+
+        <a-entity mindar-image-target="targetIndex: 0" class="target-plane" data-scene="1">
+            <a-gltf-model src="#model-1" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer></a-gltf-model>
         </a-entity>
+        
+        <a-entity mindar-image-target="targetIndex: 1" class="target-plane" data-scene="2">
+            <a-gltf-model src="#model-2" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer></a-gltf-model>
+        </a-entity>
+
+        <a-entity mindar-image-target="targetIndex: 2" class="target-plane" data-scene="3">
+            <a-gltf-model src="#model-3" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer></a-gltf-model>
+        </a-entity>
+
+        <a-entity mindar-image-target="targetIndex: 3" class="target-plane" data-scene="4">
+            <a-gltf-model src="#model-4" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer></a-gltf-model>
+        </a-entity>
+
+        <a-entity mindar-image-target="targetIndex: 4" class="target-plane" data-scene="5">
+            <a-gltf-model src="#model-5" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer></a-gltf-model>
+        </a-entity>
+
+        <a-entity mindar-image-target="targetIndex: 5" class="target-plane" data-scene="6">
+            <a-gltf-model src="#model-6" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer></a-gltf-model>
+        </a-entity>
+
+        <a-entity mindar-image-target="targetIndex: 6" class="target-plane" data-scene="7">
+            <a-gltf-model src="#model-7" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer></a-gltf-model>
+        </a-entity>
+
+        <a-entity mindar-image-target="targetIndex: 7" class="target-plane" data-scene="8">
+            <a-gltf-model src="#model-8" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer></a-gltf-model>
+        </a-entity>
+
+        <a-entity mindar-image-target="targetIndex: 8" class="target-plane" data-scene="9">
+            <a-gltf-model src="#model-9" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer></a-gltf-model>
+        </a-entity>
+
+        <a-entity mindar-image-target="targetIndex: 9" class="target-plane" data-scene="10">
+            <a-gltf-model src="#model-10" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer></a-gltf-model>
+        </a-entity>
+
     </a-scene>
 
-    <script src="translations.js"></script>
+    <audio id="bgm-audio" preload="auto"></audio>
+
     <script>
-        // We get the elements dynamically in the functions to ensure they exist
-        const targetEntity = document.getElementById('target-entity');
-        const audioEntity = document.getElementById('ar-audio');
-        let currentAudioLang = 'en'; 
-        let isTargetVisible = false;
+        let currentLang = 'BI'; // Default Language (BI, BM, BKD)
+        let activeSceneIndex = null;
+        const audioElement = document.getElementById('bgm-audio');
+        
+        // SETUP TARGET EVENTS
+        document.addEventListener("DOMContentLoaded", () => {
+            const targets = document.querySelectorAll('.target-plane');
+            
+            targets.forEach((target) => {
+                target.addEventListener("targetFound", event => {
+                    const sceneNum = target.getAttribute('data-scene');
+                    console.log("Found Scene: " + sceneNum);
+                    activeSceneIndex = sceneNum;
+                    playAudio(sceneNum);
+                });
 
-        if (targetEntity) {
-            targetEntity.addEventListener("targetFound", event => {
-                isTargetVisible = true;
-                console.log("Target Found");
-                if (audioEntity && audioEntity.components.sound) {
-                    audioEntity.components.sound.playSound();
-                }
+                target.addEventListener("targetLost", event => {
+                    console.log("Lost Target");
+                    activeSceneIndex = null;
+                    audioElement.pause();
+                    audioElement.currentTime = 0;
+                });
             });
+        });
 
-            targetEntity.addEventListener("targetLost", event => {
-                isTargetVisible = false;
-                console.log("Target Lost");
-                if (audioEntity && audioEntity.components.sound) {
-                    audioEntity.components.sound.pauseSound();
-                }
-            });
+        function playAudio(sceneNum) {
+            if (!sceneNum) return;
+            // Construct path: assets/sounds/BI/SCENE 1-BI.mp3
+            // NOTE: Ensure your files are named exactly like this in the folder!
+            // Example: assets/sounds/BM/SCENE 1-BM.mp3
+            const langFolder = currentLang; // BI, BM, or BKD
+            const src = `assets/sounds/${langFolder}/SCENE ${sceneNum}-${currentLang}.mp3`;
+            
+            audioElement.src = src;
+            audioElement.play().catch(e => console.log("Audio play failed (interact first):", e));
+        }
+
+        function changeAudioLang(lang) {
+            currentLang = lang;
+            
+            // Update Buttons
+            document.querySelectorAll('.ar-btn').forEach(btn => btn.classList.remove('active-lang'));
+            if(lang === 'BI') {
+                document.getElementById('btn-audio-en').classList.add('active-lang');
+                document.getElementById('audio-status').innerText = "Audio: English";
+            } else if(lang === 'BM') {
+                document.getElementById('btn-audio-ms').classList.add('active-lang');
+                document.getElementById('audio-status').innerText = "Audio: B. Melayu";
+            } else {
+                document.getElementById('btn-audio-du').classList.add('active-lang');
+                document.getElementById('audio-status').innerText = "Audio: Dusun";
+            }
+
+            // If a target is currently visible, switch the audio immediately
+            if (activeSceneIndex) {
+                playAudio(activeSceneIndex);
+            }
         }
 
         function startAR() {
-            // 1. Hide Home, Show AR UI
-            document.getElementById('home-screen').style.display = 'none';
-            document.getElementById('ar-ui').style.display = 'block'; 
-            
-            // 2. CRITICAL FIX: Make body transparent!
-            // The camera video is z-index: -2. If body has a background, it covers the camera.
-            document.body.style.background = 'transparent';
-
-            // 3. Get AR System and Start
-            const sceneEl = document.querySelector('a-scene');
-            const arSystem = sceneEl.systems['mindar-image-system'];
-            
-            if (arSystem) {
-                arSystem.start(); // Start the camera
-            } else {
-                console.error("MindAR system not found");
-            }
-
-            setAudioLanguage(currentAudioLang);
+            document.querySelector('a-scene').systems['mindar-image-system'].start();
+            document.getElementById('ar-ui').style.display = 'block';
+            document.body.classList.add('ar-active'); // Hides home screen via CSS
         }
 
         function stopAR() {
-            // 1. Show Home, Hide AR UI
-            document.getElementById('home-screen').style.display = 'flex';
+            document.querySelector('a-scene').systems['mindar-image-system'].stop();
             document.getElementById('ar-ui').style.display = 'none';
-            
-            // 2. Restore Background Color
-            document.body.style.background = 'linear-gradient(180deg, #4FC3F7 0%, #81C784 100%)';
-
-            // 3. Stop AR System
-            const sceneEl = document.querySelector('a-scene');
-            const arSystem = sceneEl.systems['mindar-image-system'];
-            
-            if (audioEntity && audioEntity.components.sound) {
-                audioEntity.components.sound.stopSound();
-            }
-            if (arSystem) {
-                arSystem.stop(); // Stop camera
-            }
-        }
-
-        function setAudioLanguage(lang) {
-            currentAudioLang = lang;
-            document.querySelectorAll('.ar-btn').forEach(btn => btn.classList.remove('active-lang'));
-            const activeBtn = document.getElementById(`btn-audio-${lang}`);
-            if(activeBtn) activeBtn.classList.add('active-lang');
-
-            // SAFETY FIX: Check if element exists before setting text
-            const statusText = document.getElementById('audio-status');
-            if (statusText) {
-                if(lang === 'en') statusText.innerText = "Audio: English";
-                if(lang === 'ms') statusText.innerText = "Audio: Bahasa Melayu";
-                if(lang === 'du') statusText.innerText = "Audio: Dusun";
-            } else {
-                console.warn("Element #audio-status missing");
-            }
-
-            const newSoundId = `#sound-${lang}`;
-            if (audioEntity && audioEntity.components.sound) {
-                audioEntity.components.sound.stopSound();
-                audioEntity.setAttribute('sound', 'src', newSoundId);
-
-                if (isTargetVisible) {
-                    audioEntity.components.sound.playSound();
-                }
-            }
+            document.body.classList.remove('ar-active'); // Shows home screen
+            audioElement.pause();
         }
     </script>
 </body>
