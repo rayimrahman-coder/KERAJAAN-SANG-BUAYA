@@ -21,7 +21,7 @@
             border-radius: 8px; font-weight: bold; font-size: 0.85rem; border: 1px solid #ddd;
             cursor: pointer; transition: background 0.2s;
         }
-        .audio-link-item:hover { background: #FFD700; }
+        .audio-link-item:hover, .audio-link-item.active-lang { background: #FFD700; color: #000; border-color: #CF7A00; }
         
         .ar-audio-controls {
             position: absolute; top: 80px; right: 10px; z-index: 1000;
@@ -70,9 +70,10 @@
                 <div class="audio-links">
                     <h2>Language / Bahasa:</h2>
                     <div class="audio-links-grid">
-                        <div onclick="switchSiteLanguage('en')" class="audio-link-item">🇬🇧 English</div>
-                        <div onclick="switchSiteLanguage('ms')" class="audio-link-item">🇲🇾 Melayu</div>
-                        <div onclick="switchSiteLanguage('du')" class="audio-link-item">🌾 Dusun</div>
+                        <!-- Added 'lang-btn' class so translations.js can highlight the active one -->
+                        <div onclick="switchSiteLanguage('en')" class="audio-link-item lang-btn">🇬🇧 English</div>
+                        <div onclick="switchSiteLanguage('ms')" class="audio-link-item lang-btn">🇲🇾 Melayu</div>
+                        <div onclick="switchSiteLanguage('du')" class="audio-link-item lang-btn">🌾 Dusun</div>
                     </div>
                 </div>
             </div>
@@ -95,7 +96,8 @@
         </div>
     </div>
 
-    <a-scene mindar-image="imageTargetSrc: ./Buaya.mind; autoStart: false; uiScanning: no;" 
+    <!-- FIX: Updated imageTargetSrc to point to assets/targets folder -->
+    <a-scene mindar-image="imageTargetSrc: assets/targets/Buaya.mind; autoStart: false; uiScanning: no;" 
              color-space="sRGB" 
              renderer="colorManagement: true, physicallyCorrectLights" 
              vr-mode-ui="enabled: false" 
@@ -266,13 +268,22 @@
         }
 
         function startAR() {
-            document.querySelector('a-scene').systems['mindar-image-system'].start();
-            document.getElementById('ar-ui').style.display = 'block';
-            document.body.classList.add('ar-active'); // Hides home screen via CSS
+            const sceneEl = document.querySelector('a-scene');
+            if (sceneEl && sceneEl.systems['mindar-image-system']) {
+                sceneEl.systems['mindar-image-system'].start();
+                document.getElementById('ar-ui').style.display = 'block';
+                document.body.classList.add('ar-active'); // Hides home screen via CSS
+            } else {
+                console.error("MindAR system not ready.");
+                alert("AR System is loading, please wait...");
+            }
         }
 
         function stopAR() {
-            document.querySelector('a-scene').systems['mindar-image-system'].stop();
+            const sceneEl = document.querySelector('a-scene');
+            if (sceneEl && sceneEl.systems['mindar-image-system']) {
+                sceneEl.systems['mindar-image-system'].stop();
+            }
             document.getElementById('ar-ui').style.display = 'none';
             document.body.classList.remove('ar-active'); // Shows home screen
             audioElement.pause();
