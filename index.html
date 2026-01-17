@@ -6,7 +6,6 @@
     <title>Home - Kerajaan Sang Buaya</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <!-- FIX: Added aframe-extras to enable animation-mixer -->
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
     <link rel="stylesheet" href="style.css">
     
@@ -66,13 +65,12 @@
                 
                 <div class="button-group">
                     <button class="action-btn btn-yellow" onclick="startAR()" data-i18n="btn_scan">📷 SCAN AR</button>
-                    <a href="#" class="action-btn btn-blue" data-i18n="btn_read">📚 READ E-BOOK</a>
+                    <a href="https://heyzine.com/flip-book/d296a0b263.html" target="_blank" class="action-btn btn-blue" data-i18n="btn_read">📚 READ E-BOOK</a>
                 </div>
 
                 <div class="audio-links">
                     <h2>Language / Bahasa:</h2>
                     <div class="audio-links-grid">
-                        <!-- Added 'lang-btn' class so translations.js can highlight the active one -->
                         <div onclick="switchSiteLanguage('en')" class="audio-link-item lang-btn">🇬🇧 English</div>
                         <div onclick="switchSiteLanguage('ms')" class="audio-link-item lang-btn">🇲🇾 Melayu</div>
                         <div onclick="switchSiteLanguage('du')" class="audio-link-item lang-btn">🌾 Dusun</div>
@@ -98,7 +96,6 @@
         </div>
     </div>
 
-    <!-- FIX: Updated imageTargetSrc to point to assets/targets folder -->
     <a-scene mindar-image="imageTargetSrc: assets/targets/Buaya.mind; autoStart: false; uiScanning: no;" 
              color-space="sRGB" 
              renderer="colorManagement: true, physicallyCorrectLights" 
@@ -164,7 +161,6 @@
 
     <audio id="bgm-audio" preload="auto"></audio>
 
-    <!-- Translations Script -->
     <script src="translations.js"></script>
 
     <script>
@@ -284,12 +280,4 @@
         function stopAR() {
             const sceneEl = document.querySelector('a-scene');
             if (sceneEl && sceneEl.systems['mindar-image-system']) {
-                sceneEl.systems['mindar-image-system'].stop();
-            }
-            document.getElementById('ar-ui').style.display = 'none';
-            document.body.classList.remove('ar-active'); // Shows home screen
-            audioElement.pause();
-        }
-    </script>
-</body>
-</html>
+                sceneEl.systems['mindar-image-system'].
