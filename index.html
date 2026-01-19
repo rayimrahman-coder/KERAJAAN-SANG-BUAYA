@@ -53,18 +53,23 @@
         body.ar-active .home-content { display: none; }
         body.ar-active header { display: none; }
 
-        /* Custom Loading Overlay (Because we disabled the default one) */
+        /* Custom Loading Overlay */
         #custom-loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 9999;
+            background: rgba(0,0,0,0.85); z-index: 9999;
             display: none; align-items: center; justify-content: center; flex-direction: column;
-            color: white; font-family: sans-serif;
+            color: white; font-family: sans-serif; text-align: center; padding: 20px;
         }
         .loader-spinner {
             border: 5px solid #f3f3f3; border-top: 5px solid #CF7A00; border-radius: 50%;
             width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .loader-btn {
+            margin-top: 20px; padding: 10px 20px; background: #ff4444; color: white; border: none;
+            border-radius: 5px; cursor: pointer; font-weight: bold; display: none; /* Hidden initially */
+        }
     </style>
 </head>
 <body>
@@ -108,10 +113,12 @@
         </div>
     </div>
 
-    <!-- Custom Loader -->
+    <!-- Custom Loader with Cancel Option -->
     <div id="custom-loader">
         <div class="loader-spinner"></div>
-        <div id="loader-text">Initializing Camera...</div>
+        <div id="loader-text" style="font-size: 18px; margin-bottom: 10px;">Initializing Camera...</div>
+        <div id="loader-subtext" style="font-size: 14px; color: #ccc;">Please allow camera access when prompted.</div>
+        <button class="loader-btn" onclick="stopAR()">Cancel</button>
     </div>
 
     <div id="ar-ui" style="display: none;">
@@ -135,7 +142,6 @@
              device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <!-- Using timeout to prevent hanging if assets fail -->
             <a-asset-item id="model-1" src="assets/models/scene1.glb"></a-asset-item>
             <a-asset-item id="model-2" src="assets/models/scene2.glb"></a-asset-item>
             <a-asset-item id="model-3" src="assets/models/scene3.glb"></a-asset-item>
@@ -204,6 +210,8 @@
         let currentAudioLang = 'BI'; 
         let activeSceneIndex = null;
         const audioElement = document.getElementById('bgm-audio');
+        let loaderTimeout = null;
+        let videoCheckInterval = null;
         
         document.addEventListener("DOMContentLoaded", () => {
             const storedLang = localStorage.getItem('preferredLanguage') || 'en';
@@ -229,18 +237,18 @@
                 });
             });
 
-            // Listen for AR Ready event to hide custom loader
+            // Standard Event Listener for AR Ready
             const sceneEl = document.querySelector('a-scene');
             sceneEl.addEventListener("arReady", (event) => {
-                console.log("MindAR is ready");
-                document.getElementById('custom-loader').style.display = 'none';
+                console.log("MindAR is ready (Event)");
+                hideLoader();
             });
             
             // Listen for AR Error
             sceneEl.addEventListener("arError", (event) => {
                 console.log("MindAR Error", event);
-                document.getElementById('custom-loader').style.display = 'none';
-                alert("Camera access failed or WebGL error. Please check your browser permissions.");
+                hideLoader();
+                alert("Camera access failed. Please check browser permissions and try again.");
                 stopAR();
             });
         });
@@ -291,19 +299,51 @@
             const sceneEl = document.querySelector('a-scene');
             const arSystem = sceneEl.systems['mindar-image-system'];
             
+            // Reset loader state
+            document.querySelector('.loader-btn').style.display = 'none';
+            document.getElementById('loader-text').innerText = "Starting Camera...";
+            document.getElementById('loader-subtext').innerText = "Please allow camera access when prompted.";
+            document.getElementById('custom-loader').style.display = 'flex';
+
+            // Safety timeout: If camera takes too long (e.g., waiting for permission), show Cancel button
+            if (loaderTimeout) clearTimeout(loaderTimeout);
+            loaderTimeout = setTimeout(() => {
+                document.getElementById('loader-text').innerText = "Still loading...";
+                document.getElementById('loader-subtext').innerText = "Check your browser's camera permissions.";
+                document.querySelector('.loader-btn').style.display = 'inline-block';
+            }, 5000);
+
+            // Backup check: Force hide loader if video starts playing (Fixes 'stuck on loading')
+            if (videoCheckInterval) clearInterval(videoCheckInterval);
+            videoCheckInterval = setInterval(() => {
+                const video = document.querySelector('video');
+                if (video && video.readyState >= 2) {
+                    console.log("Video detected playing. Forcing loader hide.");
+                    hideLoader();
+                }
+            }, 1000);
+
             if (arSystem) {
-                // Show custom loader
-                document.getElementById('custom-loader').style.display = 'flex';
-                document.getElementById('loader-text').innerText = "Starting Camera...";
-                
-                arSystem.start(); // Start AR
-                
-                document.getElementById('ar-ui').style.display = 'block';
-                document.body.classList.add('ar-active');
+                try {
+                    arSystem.start(); // Start AR
+                    document.getElementById('ar-ui').style.display = 'block';
+                    document.body.classList.add('ar-active');
+                } catch(e) {
+                    console.error("AR Start Error", e);
+                    alert("Could not start AR system.");
+                    hideLoader();
+                }
             } else {
                 console.error("MindAR system not ready.");
-                alert("AR System is still initializing, please reload and try again.");
+                alert("AR System is still initializing, please reload.");
+                hideLoader();
             }
+        }
+
+        function hideLoader() {
+            if (loaderTimeout) clearTimeout(loaderTimeout);
+            if (videoCheckInterval) clearInterval(videoCheckInterval);
+            document.getElementById('custom-loader').style.display = 'none';
         }
 
         function stopAR() {
@@ -312,8 +352,8 @@
             if (arSystem) {
                 arSystem.stop();
             }
+            hideLoader();
             document.getElementById('ar-ui').style.display = 'none';
-            document.getElementById('custom-loader').style.display = 'none';
             document.body.classList.remove('ar-active');
             audioElement.pause();
         }
