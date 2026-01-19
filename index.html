@@ -73,6 +73,14 @@
         }
         .btn-cancel { background: #ff4444; }
         .btn-skip { background: #28a745; margin-bottom: 10px; display: none; /* Hidden initially */ }
+
+        /* FIX 3: Force Hide MindAR's Internal UI to prevent "showLoading" crash but keep logic running */
+        .mindar-ui-overlay, .mindar-ui-loading, .mindar-ui-scanning {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            z-index: -1000 !important;
+        }
     </style>
 
     <!-- CRITICAL FIX: Define Scripts in HEAD to ensure they exist before button click -->
@@ -234,8 +242,8 @@
         </div>
     </div>
 
-    <!-- FIX 2: Added uiLoading: no to prevent crash, added uiError: no to handle errors manually -->
-    <a-scene mindar-image="imageTargetSrc: assets/targets/Buaya.mind; autoStart: false; uiScanning: no; uiLoading: no;" 
+    <!-- FIX 2: Re-enabled uiLoading and uiScanning to prevent crash, but hidden via CSS above -->
+    <a-scene mindar-image="imageTargetSrc: assets/targets/Buaya.mind; autoStart: false; uiScanning: yes; uiLoading: yes;" 
              color-space="sRGB" 
              renderer="colorManagement: true, physicallyCorrectLights" 
              vr-mode-ui="enabled: false" 
