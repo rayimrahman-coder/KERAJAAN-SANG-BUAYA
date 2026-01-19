@@ -2,81 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - Kerajaan Sang Buaya</title>
-    
-    <!-- 1. Load A-Frame 1.4.2 -->
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    
-    <!-- 2. Load MindAR 1.2.5 -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    
-    <!-- 3. Load A-Frame Extras (For animation-mixer) -->
+    <!-- FIX: Added aframe-extras to enable animation-mixer -->
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
-    
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* Core UI Styles */
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
-        
-        /* CRITICAL FIX: 
-           Instead of using uiLoading:no (which crashes), we hide the default MindAR UI 
-           using CSS. This allows the system to initialize the UI internally without showing it.
-        */
-        .mindar-ui-loading, .mindar-ui-scanning, .mindar-ui-overlay {
-            display: none !important;
-        }
-
-        .main-header {
-            position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
-            background: rgba(255, 255, 255, 0.9); box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .nav-menu {
-            list-style: none; display: flex; justify-content: center; padding: 10px; margin: 0;
-        }
-        
-        .nav-menu li { margin: 0 10px; }
-        .nav-link { text-decoration: none; color: #333; font-weight: bold; }
-        .nav-link.active { color: #2E7D32; }
-
-        /* Home Content */
-        #home-screen {
-            padding-top: 80px; min-height: 100vh;
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
-            display: flex; justify-content: center; align-items: center;
-        }
-        
-        .home-content {
-            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
-            max-width: 1200px; width: 100%; padding: 20px;
-        }
-
-        .content-left { flex: 1; min-width: 300px; text-align: center; padding: 20px; }
-        .content-right { flex: 1; min-width: 300px; text-align: center; padding: 20px; }
-
-        .main-title { font-size: 3rem; color: #2E7D32; margin-bottom: 10px; line-height: 1.2; }
-        .subtitle { font-size: 1.2rem; color: #555; margin-bottom: 30px; }
-        
-        .button-group { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-        .action-btn {
-            padding: 12px 25px; border: none; border-radius: 25px; font-size: 1rem; font-weight: bold;
-            cursor: pointer; transition: transform 0.2s; text-decoration: none; display: inline-block;
-        }
-        .action-btn:hover { transform: scale(1.05); }
-        .btn-yellow { background: #FFD700; color: #000; }
-        .btn-blue { background: #0288D1; color: white; }
-
-        .book-3d { max-width: 80%; box-shadow: 10px 10px 20px rgba(0,0,0,0.3); border-radius: 5px; transform: rotateY(-15deg); }
-
-        /* Audio Links Section */
+        /* [KEEPING YOUR EXISTING STYLES] */
         .audio-links {
-            margin: 30px auto 0; padding: 15px; background: rgba(255, 255, 255, 0.6);
+            margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.4);
             border-radius: 12px; border-left: 5px solid #CF7A00; width: 100%; max-width: 400px; box-sizing: border-box;
         }
         .audio-links h2 { margin-top: 0; font-size: 1.1rem; margin-bottom: 10px; color: #CF7A00; }
-        .audio-links-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .audio-links-grid { display: flex; flex-wrap: wrap; gap: 10px; }
         .audio-link-item {
             display: inline-block; padding: 8px 12px; background: white; color: #333; text-decoration: none;
             border-radius: 8px; font-weight: bold; font-size: 0.85rem; border: 1px solid #ddd;
@@ -84,10 +25,9 @@
         }
         .audio-link-item:hover, .audio-link-item.active-lang { background: #FFD700; color: #000; border-color: #CF7A00; }
         
-        /* AR UI Overlays */
         .ar-audio-controls {
             position: absolute; top: 80px; right: 10px; z-index: 1000;
-            display: flex; flex-direction: column; gap: 10px; background: rgba(0, 0, 0, 0.6);
+            display: flex; flex-direction: column; gap: 10px; background: rgba(0, 0, 0, 0.5);
             padding: 10px; border-radius: 10px; backdrop-filter: blur(5px);
         }
         .ar-label { color: white; font-size: 12px; text-align: center; margin-bottom: 5px; font-weight: bold; }
@@ -96,25 +36,12 @@
             font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;
         }
         .ar-btn.active-lang { background: #FFD700; color: #000; border: 2px solid white; }
-        
         #ar-ui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; pointer-events: none; }
         #ar-ui > * { pointer-events: auto; }
-        
-        /* Hide home screen when AR is active */
+        /* Fix for hidden UI */
         body.ar-active { background: transparent !important; }
-        body.ar-active #home-screen { display: none; }
-        body.ar-active .main-header { display: none; }
-        
-        /* Loading Overlay */
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
-            z-index: 2000; display: none; justify-content: center; align-items: center; flex-direction: column; color: white;
-        }
-        .loader {
-            border: 5px solid #f3f3f3; border-top: 5px solid #FFD700; border-radius: 50%;
-            width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body.ar-active .home-content { display: none; }
+        body.ar-active header { display: none; }
     </style>
 </head>
 <body>
@@ -131,12 +58,6 @@
         </nav>
     </header>
 
-    <!-- Custom Loading Screen -->
-    <div id="loading-overlay">
-        <div class="loader"></div>
-        <div id="loading-text">Starting AR...<br><span style="font-size:0.8em; opacity:0.8;">Loading 3D Models...</span></div>
-    </div>
-
     <div id="home-screen">
         <div class="home-content">
             <div class="content-left">
@@ -145,30 +66,28 @@
                 
                 <div class="button-group">
                     <button class="action-btn btn-yellow" onclick="startAR()" data-i18n="btn_scan">📷 SCAN AR</button>
-                    <a href="https://online.fliphtml5.com/szolx/xdbu/" target="_blank" class="action-btn btn-blue" data-i18n="btn_read">📚 READ E-BOOK</a>
+                    <a href="#" class="action-btn btn-blue" data-i18n="btn_read">📚 READ E-BOOK</a>
                 </div>
 
                 <div class="audio-links">
                     <h2>Language / Bahasa:</h2>
                     <div class="audio-links-grid">
-                        <div onclick="switchSiteLanguage('en')" class="audio-link-item lang-btn" id="lang-btn-en">🇬🇧 English</div>
-                        <div onclick="switchSiteLanguage('ms')" class="audio-link-item lang-btn" id="lang-btn-ms">🇲🇾 Melayu</div>
-                        <div onclick="switchSiteLanguage('du')" class="audio-link-item lang-btn" id="lang-btn-du">🌾 Dusun</div>
+                        <!-- Added 'lang-btn' class so translations.js can highlight the active one -->
+                        <div onclick="switchSiteLanguage('en')" class="audio-link-item lang-btn">🇬🇧 English</div>
+                        <div onclick="switchSiteLanguage('ms')" class="audio-link-item lang-btn">🇲🇾 Melayu</div>
+                        <div onclick="switchSiteLanguage('du')" class="audio-link-item lang-btn">🌾 Dusun</div>
                     </div>
                 </div>
             </div>
             <div class="content-right">
-                <!-- Fallback if image missing -->
-                <div class="book-wrapper">
-                    <img src="Bookcoverpage.jpeg" alt="Book Cover" class="book-3d" onerror="this.style.display='none';">
-                </div>
+                <div class="book-wrapper"><img src="Bookcoverpage.jpeg" alt="Book" class="book-3d"></div>
             </div>
         </div>
     </div>
 
     <div id="ar-ui" style="display: none;">
         <div class="top-bar" style="position:absolute; top:10px; left:10px;">
-            <button class="back-btn" onclick="stopAR()" style="padding:10px 20px; background:#e74c3c; color:white; border:none; border-radius:25px; font-weight:bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">⬅ Back to Home</button>
+            <button class="back-btn" onclick="stopAR()" style="padding:10px; background:red; color:white; border:none; border-radius:5px;">⬅ Back to Home</button>
         </div>
         
         <div class="ar-audio-controls">
@@ -179,23 +98,14 @@
         </div>
     </div>
 
-    <!-- 
-      FIXED CONFIGURATION:
-      1. Removed 'uiLoading: no' (caused the crash).
-      2. Removed 'uiScanning: no' (handled by CSS now).
-      3. Added 'filterMinCF:0.0001; filterBeta: 0.001' for smoother tracking.
-    -->
-    <a-scene mindar-image="imageTargetSrc: assets/targets/Buaya.mind; autoStart: false; filterMinCF:0.0001; filterBeta: 0.001;" 
+    <!-- FIX: Updated imageTargetSrc to point to assets/targets folder -->
+    <a-scene mindar-image="imageTargetSrc: assets/targets/Buaya.mind; autoStart: false; uiScanning: no;" 
              color-space="sRGB" 
              renderer="colorManagement: true, physicallyCorrectLights" 
              vr-mode-ui="enabled: false" 
              device-orientation-permission-ui="enabled: false">
         
-        <!-- 
-           Note: If models are very large, this will take time. 
-           The timeout is set to 60 seconds.
-        -->
-        <a-assets timeout="60000">
+        <a-assets>
             <a-asset-item id="model-1" src="assets/models/scene1.glb"></a-asset-item>
             <a-asset-item id="model-2" src="assets/models/scene2.glb"></a-asset-item>
             <a-asset-item id="model-3" src="assets/models/scene3.glb"></a-asset-item>
@@ -210,8 +120,6 @@
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <!-- Targets -->
-        <!-- Added rotation="0 0 0" to ensure consistent orientation -->
         <a-entity mindar-image-target="targetIndex: 0" class="target-plane" data-scene="1">
             <a-gltf-model src="#model-1" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer="loop: repeat"></a-gltf-model>
         </a-entity>
@@ -256,26 +164,38 @@
 
     <audio id="bgm-audio" preload="auto"></audio>
 
+    <!-- Translations Script -->
     <script src="translations.js"></script>
 
     <script>
-        const langMap = { 'en': 'BI', 'ms': 'BM', 'du': 'BKD' };
-        const reverseLangMap = { 'BI': 'en', 'BM': 'ms', 'BKD': 'du' };
+        // Mapping between Text Translation keys (en, ms, du) and Audio Folder keys (BI, BM, BKD)
+        const langMap = {
+            'en': 'BI',
+            'ms': 'BM',
+            'du': 'BKD'
+        };
+        // Reverse mapping for AR buttons to Text
+        const reverseLangMap = {
+            'BI': 'en',
+            'BM': 'ms',
+            'BKD': 'du'
+        };
 
         let currentAudioLang = 'BI'; 
         let activeSceneIndex = null;
         const audioElement = document.getElementById('bgm-audio');
         
         document.addEventListener("DOMContentLoaded", () => {
+            // 1. Sync Audio Language with stored Text Language
             const storedLang = localStorage.getItem('preferredLanguage') || 'en';
             if (langMap[storedLang]) {
                 currentAudioLang = langMap[storedLang];
                 updateAudioUI(currentAudioLang);
-                highlightLangBtn(storedLang);
             }
 
-            // AR Events
+            // 2. Setup AR Targets
             const targets = document.querySelectorAll('.target-plane');
+            
             targets.forEach((target) => {
                 target.addEventListener("targetFound", event => {
                     const sceneNum = target.getAttribute('data-scene');
@@ -291,49 +211,43 @@
                     audioElement.currentTime = 0;
                 });
             });
-            
-            // Handle A-Frame loading
-            const sceneEl = document.querySelector('a-scene');
-            sceneEl.addEventListener('loaded', () => {
-                console.log("A-Frame Scene Loaded");
-            });
         });
 
-        function highlightLangBtn(lang) {
-            document.querySelectorAll('.audio-link-item').forEach(btn => btn.classList.remove('active-lang'));
-            const btn = document.getElementById('lang-btn-' + lang);
-            if(btn) btn.classList.add('active-lang');
-        }
-
+        // Main function to switch site-wide language (Text + Audio)
         function switchSiteLanguage(langCode) {
+            // Change text via translations.js
             if(typeof changeLanguage === 'function') {
                 changeLanguage(langCode);
             }
-            highlightLangBtn(langCode);
             
+            // Sync Audio Language
             if(langMap[langCode]) {
                 currentAudioLang = langMap[langCode];
                 updateAudioUI(currentAudioLang);
             }
         }
 
+        // Called by AR buttons (when user toggles inside AR view)
         function changeAudioLang(audioCode) {
             currentAudioLang = audioCode;
             updateAudioUI(audioCode);
 
+            // Also sync text language
             if(reverseLangMap[audioCode] && typeof changeLanguage === 'function') {
                 changeLanguage(reverseLangMap[audioCode]);
-                highlightLangBtn(reverseLangMap[audioCode]);
             }
 
+            // If a target is currently visible, switch the audio immediately
             if (activeSceneIndex) {
                 playAudio(activeSceneIndex);
             }
         }
 
         function updateAudioUI(code) {
+            // Remove active class from all AR buttons
             document.querySelectorAll('.ar-btn').forEach(btn => btn.classList.remove('active-lang'));
             
+            // Add active class to correct button
             if(code === 'BI') {
                 document.getElementById('btn-audio-en')?.classList.add('active-lang');
                 if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: English";
@@ -348,32 +262,22 @@
 
         function playAudio(sceneNum) {
             if (!sceneNum) return;
+            // File pattern: assets/sounds/BI/SCENE 1-BI.mp3
             const src = `assets/sounds/${currentAudioLang}/SCENE ${sceneNum}-${currentAudioLang}.mp3`;
+            
             audioElement.src = src;
             audioElement.play().catch(e => console.log("Audio play failed (interact first):", e));
         }
 
         function startAR() {
             const sceneEl = document.querySelector('a-scene');
-            const loadingOverlay = document.getElementById('loading-overlay');
-            
             if (sceneEl && sceneEl.systems['mindar-image-system']) {
-                loadingOverlay.style.display = 'flex';
-                
-                // Slight delay to allow UI to render before heavy processing
-                setTimeout(() => {
-                    sceneEl.systems['mindar-image-system'].start().then(() => {
-                        loadingOverlay.style.display = 'none';
-                        document.getElementById('ar-ui').style.display = 'block';
-                        document.body.classList.add('ar-active');
-                    }).catch(err => {
-                        console.error("AR Start Failed:", err);
-                        loadingOverlay.style.display = 'none';
-                        alert("Could not start Camera. Please allow permissions.");
-                    });
-                }, 100);
+                sceneEl.systems['mindar-image-system'].start();
+                document.getElementById('ar-ui').style.display = 'block';
+                document.body.classList.add('ar-active'); // Hides home screen via CSS
             } else {
-                alert("AR System is not ready yet. Please wait a moment.");
+                console.error("MindAR system not ready.");
+                alert("AR System is loading, please wait...");
             }
         }
 
@@ -383,7 +287,7 @@
                 sceneEl.systems['mindar-image-system'].stop();
             }
             document.getElementById('ar-ui').style.display = 'none';
-            document.body.classList.remove('ar-active');
+            document.body.classList.remove('ar-active'); // Shows home screen
             audioElement.pause();
         }
     </script>
