@@ -2,23 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - Kerajaan Sang Buaya</title>
-    
-    <!-- FIX 1: Downgraded to A-Frame 1.3.0 (The 'Golden Standard' for MindAR 1.2.x compatibility) -->
-    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    
-    <!-- A-Frame Extras for animation-mixer -->
-    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
-    
+    <!-- FIX: Added aframe-extras to enable animation-mixer -->
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
     <link rel="stylesheet" href="style.css">
     
     <style>
         /* [KEEPING YOUR EXISTING STYLES] */
-        body { margin: 0; overflow-x: hidden; } /* Prevent horizontal scroll */
-
         .audio-links {
             margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.4);
             border-radius: 12px; border-left: 5px solid #CF7A00; width: 100%; max-width: 400px; box-sizing: border-box;
@@ -43,139 +36,13 @@
             font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;
         }
         .ar-btn.active-lang { background: #FFD700; color: #000; border: 2px solid white; }
-        
-        /* AR UI Container */
         #ar-ui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; pointer-events: none; }
         #ar-ui > * { pointer-events: auto; }
-        
         /* Fix for hidden UI */
         body.ar-active { background: transparent !important; }
         body.ar-active .home-content { display: none; }
         body.ar-active header { display: none; }
-
-        /* Custom Loading Overlay */
-        #custom-loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 9999;
-            display: none; align-items: center; justify-content: center; flex-direction: column;
-            color: white; font-family: sans-serif; text-align: center; padding: 20px; box-sizing: border-box;
-        }
-        .loader-spinner {
-            border: 5px solid #f3f3f3; border-top: 5px solid #CF7A00; border-radius: 50%;
-            width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .loader-btn {
-            margin-top: 15px; padding: 12px 24px; color: white; border: none;
-            border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px;
-            width: 80%; max-width: 250px;
-        }
-        .btn-cancel { background: #ff4444; }
-        .btn-skip { background: #28a745; margin-bottom: 10px; display: none; /* Hidden initially */ }
-
-        /* FIX 3: Force Hide MindAR's Internal UI to prevent "showLoading" crash but keep logic running */
-        .mindar-ui-overlay, .mindar-ui-loading, .mindar-ui-scanning {
-            display: none !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-            z-index: -1000 !important;
-        }
     </style>
-
-    <!-- CRITICAL FIX: Define Scripts in HEAD to ensure they exist before button click -->
-    <script>
-        // --- GLOBAL VARIABLES & UTILS ---
-        window.loaderTimeout = null;
-        window.videoCheckInterval = null;
-
-        window.hideLoader = function() {
-            if (window.loaderTimeout) clearTimeout(window.loaderTimeout);
-            if (window.videoCheckInterval) clearInterval(window.videoCheckInterval);
-            const loader = document.getElementById('custom-loader');
-            if (loader) loader.style.display = 'none';
-        };
-
-        window.stopAR = function() {
-            console.log("Stopping AR...");
-            const sceneEl = document.querySelector('a-scene');
-            const arSystem = sceneEl && sceneEl.systems['mindar-image-system'];
-            if (arSystem) {
-                arSystem.stop();
-            }
-            window.hideLoader();
-            const arUi = document.getElementById('ar-ui');
-            if (arUi) arUi.style.display = 'none';
-            document.body.classList.remove('ar-active');
-            
-            const audio = document.getElementById('bgm-audio');
-            if (audio) {
-                audio.pause();
-                audio.currentTime = 0;
-            }
-        };
-
-        window.startAR = function() {
-            console.log("startAR called");
-            
-            // Check for Camera Support First
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert("Your browser does not support AR Camera access. Please use Chrome, Safari, or Edge on Mobile.");
-                return;
-            }
-
-            const sceneEl = document.querySelector('a-scene');
-            const arSystem = sceneEl ? sceneEl.systems['mindar-image-system'] : null;
-            
-            // Reset loader state
-            const skipBtn = document.getElementById('btn-skip-loading');
-            if(skipBtn) skipBtn.style.display = 'none';
-            
-            const loaderText = document.getElementById('loader-text');
-            if(loaderText) loaderText.innerText = "Starting Camera...";
-            
-            const loaderSub = document.getElementById('loader-subtext');
-            if(loaderSub) loaderSub.innerText = "Please allow camera access when prompted.";
-            
-            const loader = document.getElementById('custom-loader');
-            if(loader) loader.style.display = 'flex';
-
-            // Safety timeout: Show "Skip" button if loading takes more than 5 seconds
-            if (window.loaderTimeout) clearTimeout(window.loaderTimeout);
-            window.loaderTimeout = setTimeout(() => {
-                if(loaderText) loaderText.innerText = "Loading is taking a while...";
-                if(loaderSub) loaderSub.innerText = "If the camera is already on, press Skip.";
-                if(skipBtn) skipBtn.style.display = 'inline-block';
-            }, 5000);
-
-            // Backup check: Force hide loader if video starts playing
-            if (window.videoCheckInterval) clearInterval(window.videoCheckInterval);
-            window.videoCheckInterval = setInterval(() => {
-                const video = document.querySelector('video');
-                if (video && video.readyState >= 2) {
-                    console.log("Video detected playing. Forcing loader hide.");
-                    window.hideLoader();
-                }
-            }, 1000);
-
-            if (arSystem) {
-                try {
-                    arSystem.start(); // Start AR
-                    const arUi = document.getElementById('ar-ui');
-                    if(arUi) arUi.style.display = 'block';
-                    document.body.classList.add('ar-active');
-                } catch(e) {
-                    console.error("AR Start Error", e);
-                    alert("Could not start AR system. Check console.");
-                    window.hideLoader();
-                }
-            } else {
-                console.error("MindAR system not ready.");
-                alert("AR System is still initializing, please reload.");
-                window.hideLoader();
-            }
-        };
-    </script>
 </head>
 <body>
 
@@ -198,52 +65,41 @@
                 <p class="subtitle" data-i18n="home_subtitle">Scan the images to see the story come alive!</p>
                 
                 <div class="button-group">
-                    <!-- Added onclick check to be safe -->
-                    <button class="action-btn btn-yellow" onclick="if(window.startAR) window.startAR(); else alert('AR not ready');" data-i18n="btn_scan">📷 SCAN AR</button>
+                    <button class="action-btn btn-yellow" onclick="startAR()" data-i18n="btn_scan">📷 SCAN AR</button>
                     <a href="https://heyzine.com/flip-book/d296a0b263.html" class="action-btn btn-blue" data-i18n="btn_read">📚 READ E-BOOK</a>
                 </div>
 
                 <div class="audio-links">
                     <h2>Language / Bahasa:</h2>
                     <div class="audio-links-grid">
-                        <div onclick="window.switchSiteLanguage('en')" class="audio-link-item lang-btn">🇬🇧 English</div>
-                        <div onclick="window.switchSiteLanguage('ms')" class="audio-link-item lang-btn">🇲🇾 Melayu</div>
-                        <div onclick="window.switchSiteLanguage('du')" class="audio-link-item lang-btn">🌾 Dusun</div>
+                        <!-- Added 'lang-btn' class so translations.js can highlight the active one -->
+                        <div onclick="switchSiteLanguage('en')" class="audio-link-item lang-btn">🇬🇧 English</div>
+                        <div onclick="switchSiteLanguage('ms')" class="audio-link-item lang-btn">🇲🇾 Melayu</div>
+                        <div onclick="switchSiteLanguage('du')" class="audio-link-item lang-btn">🌾 Dusun</div>
                     </div>
                 </div>
             </div>
             <div class="content-right">
-                <!-- Fallback image if book cover missing -->
-                <div class="book-wrapper"><img src="Bookcoverpage.jpeg" onerror="this.src='https://placehold.co/300x400?text=Book+Cover'" alt="Book" class="book-3d"></div>
+                <div class="book-wrapper"><img src="Bookcoverpage.jpeg" alt="Book" class="book-3d"></div>
             </div>
         </div>
     </div>
 
-    <!-- Custom Loader with Cancel Option -->
-    <div id="custom-loader">
-        <div class="loader-spinner"></div>
-        <div id="loader-text" style="font-size: 18px; margin-bottom: 10px;">Initializing Camera...</div>
-        <div id="loader-subtext" style="font-size: 14px; color: #ccc; margin-bottom: 20px;">Please allow camera access if prompted.</div>
-        
-        <button class="loader-btn btn-skip" onclick="window.hideLoader()" id="btn-skip-loading">⚠️ Skip Loading Screen</button>
-        <button class="loader-btn btn-cancel" onclick="window.stopAR()">Cancel / Go Back</button>
-    </div>
-
     <div id="ar-ui" style="display: none;">
         <div class="top-bar" style="position:absolute; top:10px; left:10px;">
-            <button class="back-btn" onclick="window.stopAR()" style="padding:10px; background:red; color:white; border:none; border-radius:5px; font-weight:bold;">⬅ STOP AR</button>
+            <button class="back-btn" onclick="stopAR()" style="padding:10px; background:red; color:white; border:none; border-radius:5px;">⬅ Back to Home</button>
         </div>
         
         <div class="ar-audio-controls">
             <div id="audio-status" class="ar-label">Audio: English</div>
-            <button class="ar-btn active-lang" id="btn-audio-en" onclick="window.changeAudioLang('BI')">🇬🇧 EN</button>
-            <button class="ar-btn" id="btn-audio-ms" onclick="window.changeAudioLang('BM')">🇲🇾 BM</button>
-            <button class="ar-btn" id="btn-audio-du" onclick="window.changeAudioLang('BKD')">🌾 DUS</button>
+            <button class="ar-btn active-lang" id="btn-audio-en" onclick="changeAudioLang('BI')">🇬🇧 EN</button>
+            <button class="ar-btn" id="btn-audio-ms" onclick="changeAudioLang('BM')">🇲🇾 BM</button>
+            <button class="ar-btn" id="btn-audio-du" onclick="changeAudioLang('BKD')">🌾 DUS</button>
         </div>
     </div>
 
-    <!-- FIX 2: Re-enabled uiLoading and uiScanning to prevent crash, but hidden via CSS above -->
-    <a-scene mindar-image="imageTargetSrc: assets/targets/Buaya.mind; autoStart: false; uiScanning: yes; uiLoading: yes;" 
+    <!-- FIX: Updated imageTargetSrc to point to assets/targets folder -->
+    <a-scene mindar-image="imageTargetSrc: assets/targets/Buaya.mind; autoStart: false; uiScanning: no;" 
              color-space="sRGB" 
              renderer="colorManagement: true, physicallyCorrectLights" 
              vr-mode-ui="enabled: false" 
@@ -264,79 +120,81 @@
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <!-- Targets -->
         <a-entity mindar-image-target="targetIndex: 0" class="target-plane" data-scene="1">
-            <a-gltf-model src="#model-1" scale="0.1 0.1 0.1" position="0 -0.4 0" animation-mixer="loop: repeat"></a-gltf-model>
+            <a-gltf-model src="#model-1" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer="loop: repeat"></a-gltf-model>
         </a-entity>
         
         <a-entity mindar-image-target="targetIndex: 1" class="target-plane" data-scene="2">
-            <a-gltf-model src="#model-2" scale="0.1 0.1 0.1" position="0 -0.4 0" animation-mixer="loop: repeat"></a-gltf-model>
+            <a-gltf-model src="#model-2" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer="loop: repeat"></a-gltf-model>
         </a-entity>
 
         <a-entity mindar-image-target="targetIndex: 2" class="target-plane" data-scene="3">
-            <a-gltf-model src="#model-3" scale="0.1 0.1 0.1" position="0 -0.4 0" animation-mixer="loop: repeat"></a-gltf-model>
+            <a-gltf-model src="#model-3" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer="loop: repeat"></a-gltf-model>
         </a-entity>
 
         <a-entity mindar-image-target="targetIndex: 3" class="target-plane" data-scene="4">
-            <a-gltf-model src="#model-4" scale="0.1 0.1 0.1" position="0 -0.4 0" animation-mixer="loop: repeat"></a-gltf-model>
+            <a-gltf-model src="#model-4" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer="loop: repeat"></a-gltf-model>
         </a-entity>
 
         <a-entity mindar-image-target="targetIndex: 4" class="target-plane" data-scene="5">
-            <a-gltf-model src="#model-5" scale="0.1 0.1 0.1" position="0 -0.4 0" animation-mixer="loop: repeat"></a-gltf-model>
+            <a-gltf-model src="#model-5" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer="loop: repeat"></a-gltf-model>
         </a-entity>
 
         <a-entity mindar-image-target="targetIndex: 5" class="target-plane" data-scene="6">
-            <a-gltf-model src="#model-6" scale="0.1 0.1 0.1" position="0 -0.4 0" animation-mixer="loop: repeat"></a-gltf-model>
+            <a-gltf-model src="#model-6" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer="loop: repeat"></a-gltf-model>
         </a-entity>
 
         <a-entity mindar-image-target="targetIndex: 6" class="target-plane" data-scene="7">
-            <a-gltf-model src="#model-7" scale="0.1 0.1 0.1" position="0 -0.4 0" animation-mixer="loop: repeat"></a-gltf-model>
+            <a-gltf-model src="#model-7" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer="loop: repeat"></a-gltf-model>
         </a-entity>
 
         <a-entity mindar-image-target="targetIndex: 7" class="target-plane" data-scene="8">
-            <a-gltf-model src="#model-8" scale="0.1 0.1 0.1" position="0 -0.4 0" animation-mixer="loop: repeat"></a-gltf-model>
+            <a-gltf-model src="#model-8" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer="loop: repeat"></a-gltf-model>
         </a-entity>
 
         <a-entity mindar-image-target="targetIndex: 8" class="target-plane" data-scene="9">
-            <a-gltf-model src="#model-9" scale="0.1 0.1 0.1" position="0 -0.4 0" animation-mixer="loop: repeat"></a-gltf-model>
+            <a-gltf-model src="#model-9" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer="loop: repeat"></a-gltf-model>
         </a-entity>
 
         <a-entity mindar-image-target="targetIndex: 9" class="target-plane" data-scene="10">
-            <a-gltf-model src="#model-10" scale="0.1 0.1 0.1" position="0 -0.4 0" animation-mixer="loop: repeat"></a-gltf-model>
+            <a-gltf-model src="#model-10" scale="0.1 0.1 0.1" position="0 -0.4 0" rotation="0 0 0" animation-mixer="loop: repeat"></a-gltf-model>
         </a-entity>
 
     </a-scene>
 
     <audio id="bgm-audio" preload="auto"></audio>
 
+    <!-- Translations Script -->
     <script src="translations.js"></script>
 
     <script>
-        console.log("Main logic script loading...");
-
-        const langMap = { 'en': 'BI', 'ms': 'BM', 'du': 'BKD' };
-        const reverseLangMap = { 'BI': 'en', 'BM': 'ms', 'BKD': 'du' };
+        // Mapping between Text Translation keys (en, ms, du) and Audio Folder keys (BI, BM, BKD)
+        const langMap = {
+            'en': 'BI',
+            'ms': 'BM',
+            'du': 'BKD'
+        };
+        // Reverse mapping for AR buttons to Text
+        const reverseLangMap = {
+            'BI': 'en',
+            'BM': 'ms',
+            'BKD': 'du'
+        };
 
         let currentAudioLang = 'BI'; 
         let activeSceneIndex = null;
+        const audioElement = document.getElementById('bgm-audio');
         
         document.addEventListener("DOMContentLoaded", () => {
-            console.log("DOMContentLoaded fired");
-            
-            // Try to load preferred language from storage
-            try {
-                const storedLang = localStorage.getItem('preferredLanguage') || 'en';
-                if (langMap[storedLang]) {
-                    currentAudioLang = langMap[storedLang];
-                    updateAudioUI(currentAudioLang);
-                }
-            } catch (e) {
-                console.warn("Storage access denied (likely tracking prevention). Using default language.", e);
+            // 1. Sync Audio Language with stored Text Language
+            const storedLang = localStorage.getItem('preferredLanguage') || 'en';
+            if (langMap[storedLang]) {
+                currentAudioLang = langMap[storedLang];
+                updateAudioUI(currentAudioLang);
             }
 
-            // Setup AR Target Listeners
+            // 2. Setup AR Targets
             const targets = document.querySelectorAll('.target-plane');
-            const audioElement = document.getElementById('bgm-audio');
             
             targets.forEach((target) => {
                 target.addEventListener("targetFound", event => {
@@ -349,87 +207,89 @@
                 target.addEventListener("targetLost", event => {
                     console.log("Lost Target");
                     activeSceneIndex = null;
-                    if(audioElement) {
-                        audioElement.pause();
-                        audioElement.currentTime = 0;
-                    }
+                    audioElement.pause();
+                    audioElement.currentTime = 0;
                 });
-            });
-
-            // Listen for AR Ready event
-            const sceneEl = document.querySelector('a-scene');
-            sceneEl.addEventListener("arReady", (event) => {
-                console.log("MindAR is ready (Event)");
-                if(window.hideLoader) window.hideLoader();
-            });
-            
-            // Listen for AR Error event
-            sceneEl.addEventListener("arError", (event) => {
-                console.log("MindAR Error", event);
-                if(window.hideLoader) window.hideLoader();
-                alert("Camera access failed. Please check browser permissions.");
-                if(window.stopAR) window.stopAR();
             });
         });
 
-        // --- Helper Functions attached to Window for access ---
-
-        window.switchSiteLanguage = function(langCode) {
+        // Main function to switch site-wide language (Text + Audio)
+        function switchSiteLanguage(langCode) {
+            // Change text via translations.js
             if(typeof changeLanguage === 'function') {
-                try {
-                    changeLanguage(langCode);
-                } catch(e) { console.warn("Translation failed", e); }
+                changeLanguage(langCode);
             }
+            
+            // Sync Audio Language
             if(langMap[langCode]) {
                 currentAudioLang = langMap[langCode];
                 updateAudioUI(currentAudioLang);
             }
-        };
+        }
 
-        window.changeAudioLang = function(audioCode) {
+        // Called by AR buttons (when user toggles inside AR view)
+        function changeAudioLang(audioCode) {
             currentAudioLang = audioCode;
             updateAudioUI(audioCode);
+
+            // Also sync text language
             if(reverseLangMap[audioCode] && typeof changeLanguage === 'function') {
-                try {
-                    changeLanguage(reverseLangMap[audioCode]);
-                } catch(e) { console.warn("Translation failed", e); }
+                changeLanguage(reverseLangMap[audioCode]);
             }
+
+            // If a target is currently visible, switch the audio immediately
             if (activeSceneIndex) {
                 playAudio(activeSceneIndex);
             }
-        };
+        }
 
         function updateAudioUI(code) {
+            // Remove active class from all AR buttons
             document.querySelectorAll('.ar-btn').forEach(btn => btn.classList.remove('active-lang'));
             
-            const btnEn = document.getElementById('btn-audio-en');
-            const btnMs = document.getElementById('btn-audio-ms');
-            const btnDu = document.getElementById('btn-audio-du');
-            const status = document.getElementById('audio-status');
-            
+            // Add active class to correct button
             if(code === 'BI') {
-                if(btnEn) btnEn.classList.add('active-lang');
-                if(status) status.innerText = "Audio: English";
+                document.getElementById('btn-audio-en')?.classList.add('active-lang');
+                if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: English";
             } else if(code === 'BM') {
-                if(btnMs) btnMs.classList.add('active-lang');
-                if(status) status.innerText = "Audio: B. Melayu";
+                document.getElementById('btn-audio-ms')?.classList.add('active-lang');
+                if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: B. Melayu";
             } else {
-                if(btnDu) btnDu.classList.add('active-lang');
-                if(status) status.innerText = "Audio: Dusun";
+                document.getElementById('btn-audio-du')?.classList.add('active-lang');
+                if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: Dusun";
             }
         }
 
         function playAudio(sceneNum) {
             if (!sceneNum) return;
-            const audioElement = document.getElementById('bgm-audio');
-            if (!audioElement) return;
-
+            // File pattern: assets/sounds/BI/SCENE 1-BI.mp3
             const src = `assets/sounds/${currentAudioLang}/SCENE ${sceneNum}-${currentAudioLang}.mp3`;
+            
             audioElement.src = src;
             audioElement.play().catch(e => console.log("Audio play failed (interact first):", e));
         }
 
-        console.log("Main logic script loaded.");
+        function startAR() {
+            const sceneEl = document.querySelector('a-scene');
+            if (sceneEl && sceneEl.systems['mindar-image-system']) {
+                sceneEl.systems['mindar-image-system'].start();
+                document.getElementById('ar-ui').style.display = 'block';
+                document.body.classList.add('ar-active'); // Hides home screen via CSS
+            } else {
+                console.error("MindAR system not ready.");
+                alert("AR System is loading, please wait...");
+            }
+        }
+
+        function stopAR() {
+            const sceneEl = document.querySelector('a-scene');
+            if (sceneEl && sceneEl.systems['mindar-image-system']) {
+                sceneEl.systems['mindar-image-system'].stop();
+            }
+            document.getElementById('ar-ui').style.display = 'none';
+            document.body.classList.remove('ar-active'); // Shows home screen
+            audioElement.pause();
+        }
     </script>
 </body>
 </html>
