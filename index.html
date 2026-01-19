@@ -96,7 +96,7 @@
                 <p class="subtitle" data-i18n="home_subtitle">Scan the images to see the story come alive!</p>
                 
                 <div class="button-group">
-                    <button class="action-btn btn-yellow" onclick="startAR()" data-i18n="btn_scan">📷 SCAN AR</button>
+                    <button class="action-btn btn-yellow" onclick="window.startAR()" data-i18n="btn_scan">📷 SCAN AR</button>
                     <a href="https://heyzine.com/flip-book/d296a0b263.html" class="action-btn btn-blue" data-i18n="btn_read">📚 READ E-BOOK</a>
                 </div>
 
@@ -122,13 +122,13 @@
         <div id="loader-text" style="font-size: 18px; margin-bottom: 10px;">Initializing Camera...</div>
         <div id="loader-subtext" style="font-size: 14px; color: #ccc; margin-bottom: 20px;">Please allow camera access if prompted.</div>
         
-        <button class="loader-btn btn-skip" onclick="hideLoader()" id="btn-skip-loading">⚠️ Skip Loading Screen</button>
-        <button class="loader-btn btn-cancel" onclick="stopAR()">Cancel / Go Back</button>
+        <button class="loader-btn btn-skip" onclick="window.hideLoader()" id="btn-skip-loading">⚠️ Skip Loading Screen</button>
+        <button class="loader-btn btn-cancel" onclick="window.stopAR()">Cancel / Go Back</button>
     </div>
 
     <div id="ar-ui" style="display: none;">
         <div class="top-bar" style="position:absolute; top:10px; left:10px;">
-            <button class="back-btn" onclick="stopAR()" style="padding:10px; background:red; color:white; border:none; border-radius:5px; font-weight:bold;">⬅ STOP AR</button>
+            <button class="back-btn" onclick="window.stopAR()" style="padding:10px; background:red; color:white; border:none; border-radius:5px; font-weight:bold;">⬅ STOP AR</button>
         </div>
         
         <div class="ar-audio-controls">
@@ -209,6 +209,8 @@
     <script src="translations.js"></script>
 
     <script>
+        console.log("Main script loading...");
+
         const langMap = { 'en': 'BI', 'ms': 'BM', 'du': 'BKD' };
         const reverseLangMap = { 'BI': 'en', 'BM': 'ms', 'BKD': 'du' };
 
@@ -219,10 +221,17 @@
         let videoCheckInterval = null;
         
         document.addEventListener("DOMContentLoaded", () => {
-            const storedLang = localStorage.getItem('preferredLanguage') || 'en';
-            if (langMap[storedLang]) {
-                currentAudioLang = langMap[storedLang];
-                updateAudioUI(currentAudioLang);
+            console.log("DOMContentLoaded fired");
+            
+            // FIX: Wrapped in try-catch to prevent "Access Denied" error from crashing the script
+            try {
+                const storedLang = localStorage.getItem('preferredLanguage') || 'en';
+                if (langMap[storedLang]) {
+                    currentAudioLang = langMap[storedLang];
+                    updateAudioUI(currentAudioLang);
+                }
+            } catch (e) {
+                console.warn("Storage access denied, using default language.", e);
             }
 
             const targets = document.querySelectorAll('.target-plane');
@@ -246,19 +255,20 @@
             const sceneEl = document.querySelector('a-scene');
             sceneEl.addEventListener("arReady", (event) => {
                 console.log("MindAR is ready (Event)");
-                hideLoader();
+                window.hideLoader();
             });
             
             // Listen for AR Error
             sceneEl.addEventListener("arError", (event) => {
                 console.log("MindAR Error", event);
-                hideLoader();
+                window.hideLoader();
                 alert("Camera access failed. Please check browser permissions and try again.");
-                stopAR();
+                window.stopAR();
             });
         });
 
-        function switchSiteLanguage(langCode) {
+        // Make functions globally available using window.functionName
+        window.switchSiteLanguage = function(langCode) {
             if(typeof changeLanguage === 'function') {
                 changeLanguage(langCode);
             }
@@ -266,9 +276,9 @@
                 currentAudioLang = langMap[langCode];
                 updateAudioUI(currentAudioLang);
             }
-        }
+        };
 
-        function changeAudioLang(audioCode) {
+        window.changeAudioLang = function(audioCode) {
             currentAudioLang = audioCode;
             updateAudioUI(audioCode);
             if(reverseLangMap[audioCode] && typeof changeLanguage === 'function') {
@@ -277,7 +287,7 @@
             if (activeSceneIndex) {
                 playAudio(activeSceneIndex);
             }
-        }
+        };
 
         function updateAudioUI(code) {
             document.querySelectorAll('.ar-btn').forEach(btn => btn.classList.remove('active-lang'));
@@ -286,4 +296,93 @@
                 if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: English";
             } else if(code === 'BM') {
                 document.getElementById('btn-audio-ms')?.classList.add('active-lang');
-                if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio:
+                if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: B. Melayu";
+            } else {
+                document.getElementById('btn-audio-du')?.classList.add('active-lang');
+                if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: Dusun";
+            }
+        }
+
+        function playAudio(sceneNum) {
+            if (!sceneNum) return;
+            const src = `assets/sounds/${currentAudioLang}/SCENE ${sceneNum}-${currentAudioLang}.mp3`;
+            audioElement.src = src;
+            audioElement.play().catch(e => console.log("Audio play failed (interact first):", e));
+        }
+
+        // Attached explicitly to window to avoid ReferenceError
+        window.startAR = async function() {
+            console.log("startAR called");
+            
+            // Check for Camera Support First
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Your browser does not support AR Camera access. Please use Chrome, Safari, or Edge on Mobile.");
+                return;
+            }
+
+            const sceneEl = document.querySelector('a-scene');
+            const arSystem = sceneEl.systems['mindar-image-system'];
+            
+            // Reset loader state
+            document.getElementById('btn-skip-loading').style.display = 'none';
+            document.getElementById('loader-text').innerText = "Starting Camera...";
+            document.getElementById('loader-subtext').innerText = "Please allow camera access when prompted.";
+            document.getElementById('custom-loader').style.display = 'flex';
+
+            // Safety timeout: Show "Skip" button if loading takes more than 5 seconds
+            if (loaderTimeout) clearTimeout(loaderTimeout);
+            loaderTimeout = setTimeout(() => {
+                document.getElementById('loader-text').innerText = "Loading is taking a while...";
+                document.getElementById('loader-subtext').innerText = "If the camera is already on, press Skip.";
+                document.getElementById('btn-skip-loading').style.display = 'inline-block';
+            }, 5000);
+
+            // Backup check: Force hide loader if video starts playing
+            if (videoCheckInterval) clearInterval(videoCheckInterval);
+            videoCheckInterval = setInterval(() => {
+                const video = document.querySelector('video');
+                if (video && video.readyState >= 2) {
+                    console.log("Video detected playing. Forcing loader hide.");
+                    window.hideLoader();
+                }
+            }, 1000);
+
+            if (arSystem) {
+                try {
+                    arSystem.start(); // Start AR
+                    document.getElementById('ar-ui').style.display = 'block';
+                    document.body.classList.add('ar-active');
+                } catch(e) {
+                    console.error("AR Start Error", e);
+                    alert("Could not start AR system. Check console.");
+                    window.hideLoader();
+                }
+            } else {
+                console.error("MindAR system not ready.");
+                alert("AR System is still initializing, please reload.");
+                window.hideLoader();
+            }
+        };
+
+        window.hideLoader = function() {
+            if (loaderTimeout) clearTimeout(loaderTimeout);
+            if (videoCheckInterval) clearInterval(videoCheckInterval);
+            document.getElementById('custom-loader').style.display = 'none';
+        };
+
+        window.stopAR = function() {
+            const sceneEl = document.querySelector('a-scene');
+            const arSystem = sceneEl.systems['mindar-image-system'];
+            if (arSystem) {
+                arSystem.stop();
+            }
+            window.hideLoader();
+            document.getElementById('ar-ui').style.display = 'none';
+            document.body.classList.remove('ar-active');
+            audioElement.pause();
+        };
+        
+        console.log("Main script loaded successfully");
+    </script>
+</body>
+</html>
