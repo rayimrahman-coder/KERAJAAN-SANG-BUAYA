@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Home - Kerajaan Sang Buaya</title>
     
-    <!-- FIX 1: Downgraded to A-Frame 1.4.2 (Compatible with MindAR 1.2.5) -->
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <!-- FIX 1: Downgraded to A-Frame 1.3.0 (The 'Golden Standard' for MindAR 1.2.x compatibility) -->
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
     <!-- A-Frame Extras for animation-mixer -->
-    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
     
     <link rel="stylesheet" href="style.css">
     
@@ -56,9 +56,9 @@
         /* Custom Loading Overlay */
         #custom-loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 9999;
+            background: rgba(0,0,0,0.9); z-index: 9999;
             display: none; align-items: center; justify-content: center; flex-direction: column;
-            color: white; font-family: sans-serif; text-align: center; padding: 20px;
+            color: white; font-family: sans-serif; text-align: center; padding: 20px; box-sizing: border-box;
         }
         .loader-spinner {
             border: 5px solid #f3f3f3; border-top: 5px solid #CF7A00; border-radius: 50%;
@@ -67,9 +67,12 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .loader-btn {
-            margin-top: 20px; padding: 10px 20px; background: #ff4444; color: white; border: none;
-            border-radius: 5px; cursor: pointer; font-weight: bold; display: none; /* Hidden initially */
+            margin-top: 15px; padding: 12px 24px; color: white; border: none;
+            border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px;
+            width: 80%; max-width: 250px;
         }
+        .btn-cancel { background: #ff4444; }
+        .btn-skip { background: #28a745; margin-bottom: 10px; display: none; /* Hidden initially */ }
     </style>
 </head>
 <body>
@@ -117,8 +120,10 @@
     <div id="custom-loader">
         <div class="loader-spinner"></div>
         <div id="loader-text" style="font-size: 18px; margin-bottom: 10px;">Initializing Camera...</div>
-        <div id="loader-subtext" style="font-size: 14px; color: #ccc;">Please allow camera access when prompted.</div>
-        <button class="loader-btn" onclick="stopAR()">Cancel</button>
+        <div id="loader-subtext" style="font-size: 14px; color: #ccc; margin-bottom: 20px;">Please allow camera access if prompted.</div>
+        
+        <button class="loader-btn btn-skip" onclick="hideLoader()" id="btn-skip-loading">⚠️ Skip Loading Screen</button>
+        <button class="loader-btn btn-cancel" onclick="stopAR()">Cancel / Go Back</button>
     </div>
 
     <div id="ar-ui" style="display: none;">
@@ -281,82 +286,4 @@
                 if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: English";
             } else if(code === 'BM') {
                 document.getElementById('btn-audio-ms')?.classList.add('active-lang');
-                if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: B. Melayu";
-            } else {
-                document.getElementById('btn-audio-du')?.classList.add('active-lang');
-                if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio: Dusun";
-            }
-        }
-
-        function playAudio(sceneNum) {
-            if (!sceneNum) return;
-            const src = `assets/sounds/${currentAudioLang}/SCENE ${sceneNum}-${currentAudioLang}.mp3`;
-            audioElement.src = src;
-            audioElement.play().catch(e => console.log("Audio play failed (interact first):", e));
-        }
-
-        function startAR() {
-            const sceneEl = document.querySelector('a-scene');
-            const arSystem = sceneEl.systems['mindar-image-system'];
-            
-            // Reset loader state
-            document.querySelector('.loader-btn').style.display = 'none';
-            document.getElementById('loader-text').innerText = "Starting Camera...";
-            document.getElementById('loader-subtext').innerText = "Please allow camera access when prompted.";
-            document.getElementById('custom-loader').style.display = 'flex';
-
-            // Safety timeout: If camera takes too long (e.g., waiting for permission), show Cancel button
-            if (loaderTimeout) clearTimeout(loaderTimeout);
-            loaderTimeout = setTimeout(() => {
-                document.getElementById('loader-text').innerText = "Still loading...";
-                document.getElementById('loader-subtext').innerText = "Check your browser's camera permissions.";
-                document.querySelector('.loader-btn').style.display = 'inline-block';
-            }, 5000);
-
-            // Backup check: Force hide loader if video starts playing (Fixes 'stuck on loading')
-            if (videoCheckInterval) clearInterval(videoCheckInterval);
-            videoCheckInterval = setInterval(() => {
-                const video = document.querySelector('video');
-                if (video && video.readyState >= 2) {
-                    console.log("Video detected playing. Forcing loader hide.");
-                    hideLoader();
-                }
-            }, 1000);
-
-            if (arSystem) {
-                try {
-                    arSystem.start(); // Start AR
-                    document.getElementById('ar-ui').style.display = 'block';
-                    document.body.classList.add('ar-active');
-                } catch(e) {
-                    console.error("AR Start Error", e);
-                    alert("Could not start AR system.");
-                    hideLoader();
-                }
-            } else {
-                console.error("MindAR system not ready.");
-                alert("AR System is still initializing, please reload.");
-                hideLoader();
-            }
-        }
-
-        function hideLoader() {
-            if (loaderTimeout) clearTimeout(loaderTimeout);
-            if (videoCheckInterval) clearInterval(videoCheckInterval);
-            document.getElementById('custom-loader').style.display = 'none';
-        }
-
-        function stopAR() {
-            const sceneEl = document.querySelector('a-scene');
-            const arSystem = sceneEl.systems['mindar-image-system'];
-            if (arSystem) {
-                arSystem.stop();
-            }
-            hideLoader();
-            document.getElementById('ar-ui').style.display = 'none';
-            document.body.classList.remove('ar-active');
-            audioElement.pause();
-        }
-    </script>
-</body>
-</html>
+                if(document.getElementById('audio-status')) document.getElementById('audio-status').innerText = "Audio:
